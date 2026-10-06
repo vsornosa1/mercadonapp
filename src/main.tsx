@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import { App } from './app/App';
+
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
@@ -9,9 +11,6 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <main>
-      <h1>Mercadonapp</h1>
-      <p>Andamiaje listo. El catálogo llega en la fase siguiente.</p>
-    </main>
+    <App />
   </StrictMode>,
 );
