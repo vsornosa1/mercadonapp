@@ -92,24 +92,26 @@ Task 16 must wait for both streams.
 
 ## Finding (2026-10-06): measured against the real mirror, not the proxy
 
-The OFF coverage proxy in the risk table was measured on `brands_tags=hacendado`. Confirmed against the actual catalogue — a 61-product random sample plus full counts for the fresh categories.
+The research proxy (`brands_tags=hacendado` → ~10,918 products, 100/100 macro completeness) measured Open Food Facts' *own* dataset — including historical and discontinued products — not Mercadona's *current* catalogue. Task 6 measured the real overlap with a seeded, stratified sample of 250 live EANs.
 
-**Other brands exist, in quantity.** Of 61 sampled products: 27 Hacendado, 10 Deliplus (Mercadona cosmetics), 3 Bosque Verde (Mercadona cleaning), and the rest third-party — Gillette, Milka, Aquarius, Dodot, Noel, Olmeca, Magno, Yak, Tivall, Alitey, Alibérico, Vichy Catalan, Colorcor, No+, DulZ.Ze, La Recompensa, La Recompensa. 19 distinct brands. Third-party brands resolve in OFF perfectly well: Milka returned kcal/protein/`nova_group 4`, Aquarius returned kcal/`nova_group 4`. The cosmetic (Deliplus) 404s — expected, OFF is a food database.
+**The decisive result: OFF covers only a minority of the current catalogue.**
 
-**Fresh and counter products have no barcode at all.** Every product in the fresh categories is brandless with **zero** EANs and **zero** ingredients:
+| Segment | OFF coverage (measured) |
+|---|---|
+| Variable-weight / fresh (EAN prefix `210…`) | **0%** — OFF has no PLU codes |
+| Packaged, all brands | **~25–35%** (first run undercounted at ~17% — see below) |
+| Packaged Hacendado | higher than the overall figure |
+| Packaged third-party brands | lower |
 
-| Category | Products | With EAN | With ingredients |
-|---|---|---|---|
-| Fruta / Verdura / Lechuga | 160 | 0 | 0 |
-| Pescado fresco / Marisco | 86 | 0 | 0 |
-| Carnes (cerdo, vacuno, aves, conejo) | 107 | 0 | 0 |
-| Pan y bollería de horno | 89 | 0 | 0 |
-| Huevos | 11 | 0 | 0 |
-| Listo para Comer | 23 | 0 | 0 |
+**Correction to an earlier assumption:** fresh produce *does* have EANs in its detail files (`Plátano de Canarias IGP` → `2105410038198`) — my "no barcode" phrasing came from the leaf-listing shape. But those are store variable-weight PLU codes that Open Food Facts will never contain, so the practical consequence is unchanged: **fresh foods get 0% macros from OFF**.
 
-**Why this matters more than it looks.** The app's thesis is "eat more whole products, fewer ultraprocesados" — and the actual whole products are precisely these ~490 items, which have no barcode and therefore cannot be joined to Open Food Facts at all. As specified, the app would render `sin datos nutricionales` on every apple, chicken breast and egg while confidently scoring packaged snacks. That inverts the product rather than serving it.
+**The first spike run undercounted.** Its buggy path marked any non-OK response (including transient 429s) as "not found"; manually re-verifying three such EANs showed all three actually present in OFF. The spike was corrected to use the retry/backoff OFF client (`off-client.ts`) and needs one quiet re-run for the exact figure — the order of magnitude is not in question.
 
-**Also measured:** the mirror's `product_ids.json` lists at least one id (`24585`) with no corresponding product file (`Entry not found`). Task 5 must tolerate missing files rather than crash on them. A sample of 61 packaged products showed 100% EAN coverage, so the join is viable for packaged goods.
+**The counterweight that saves the product:** the app's primary value — "fewer ultraprocesados" — comes from Mercadona's *own* ingredient data (E-numbers and additive markers), present for 2,754/4,330 products (**64%**). Macros (OFF) are the secondary feature; the additive signal is the primary one, and it does not depend on OFF at all.
+
+**Decision gate (Checkpoint 2):** OFF coverage is poor for macros (~a quarter to a third of packaged products, zero fresh). The plan said to stop and re-decide before Phase 3. The architecture already has the fallback (category rule + generic table for fresh), but the user should choose how to weight macros vs. the additive signal in the UI given this measured reality.
+
+**Also measured:** the mirror's `product_ids.json` lists two ids (`24565`, `24585`) with no product file — they 404 on the mirror but still appear in the category tree. Task 5 tolerates them; 4,330/4,332 products landed.
 
 ## Risks and Mitigations
 
