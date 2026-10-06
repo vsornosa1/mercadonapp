@@ -30,8 +30,8 @@ export function extractENumbers(html: string): string[] {
   const matches = html.match(/e-?\d{3,4}[a-z]*/gi) ?? [];
   const codes = new Set<string>();
   for (const match of matches) {
-    const digits = match.replace(/[^0-9]/g, '');
-    if (digits) codes.add(digits);
+    // The regex guarantees at least three digits, so this is always non-empty.
+    codes.add(match.replace(/[^0-9]/g, ''));
   }
   return [...codes];
 }

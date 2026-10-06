@@ -71,4 +71,14 @@ describe('fetchOffProduct', () => {
     await expect(fetchOffProduct('123', fetchFn, sleepNow)).rejects.toThrow();
     expect(calls).toBeGreaterThan(1);
   });
+
+  it('rethrows after exhausting retries on persistent network errors', async () => {
+    let calls = 0;
+    const fetchFn = async () => {
+      calls += 1;
+      throw new Error('ENETDOWN');
+    };
+    await expect(fetchOffProduct('123', fetchFn, sleepNow)).rejects.toThrow('ENETDOWN');
+    expect(calls).toBe(5); // 1 initial attempt + 4 retries
+  });
 });

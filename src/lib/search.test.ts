@@ -58,4 +58,34 @@ describe('search', () => {
   it('returns nothing when nothing matches', () => {
     expect(search('zzzzzz', products)).toEqual([]);
   });
+
+  const withCategory: CatalogProduct = {
+    ...base,
+    id: 6,
+    name: 'Producto',
+    categoryPath: [
+      { id: 27, name: 'Fruta' },
+      { id: 853, name: 'Plátano y uva' },
+    ],
+  };
+
+  it('matches a category by exact name', () => {
+    expect(search('fruta', [...products, withCategory]).map((p) => p.id)).toContain(6);
+  });
+
+  it('matches a category by prefix', () => {
+    expect(search('platano y', [...products, withCategory]).map((p) => p.id)).toContain(6);
+  });
+
+  it('matches a category by substring', () => {
+    expect(search('y uva', [...products, withCategory]).map((p) => p.id)).toContain(6);
+  });
+
+  it('breaks score ties by name for deterministic ordering', () => {
+    const tied = [
+      { ...base, id: 10, name: 'Zumo', brand: 'Hacendado' },
+      { ...base, id: 11, name: 'Agua', brand: 'Hacendado' },
+    ];
+    expect(search('hacendado', tied).map((p) => p.id)).toEqual([11, 10]);
+  });
 });
