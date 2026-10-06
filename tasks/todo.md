@@ -70,17 +70,24 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Transcribe the type contracts from `SPEC-catalog.md`, `SPEC-nutrition.md`, `SPEC-cart.md` and `SPEC-swaps.md` into `src/types`. These freeze the interfaces between parallel work streams, which is what allows `nutrition` and `cart` to proceed independently.
 
 **Acceptance criteria:**
-- [ ] `CatalogProduct`, `NutritionFacts`, `ProcessingSignal`, `CartItem`, `Cart`, `Swap`, `Reason` exist and match the specs field for field
-- [ ] Nullable fields are genuinely nullable — `ean: string | null`, `nutrition.per100.*: number | null` — not optional-with-a-default
-- [ ] No `any`; no type that merges NOVA and the heuristic into one field
+- [x] `CatalogProduct`, `NutritionFacts`, `ProcessingSignal`, `CartItem`, `Cart`, `Swap`, `Reason` exist and match the specs field for field
+- [x] Nullable fields are genuinely nullable — `ean: string | null`, `nutrition.per100.*: number | null` — not optional-with-a-default
+- [x] No `any`; no type that merges NOVA and the heuristic into one field
+- [x] `NutritionIndex` defined — the swaps spec names it in `findSwaps`
 
 **Verification:**
-- [ ] Types pass: `npm run typecheck`
-- [ ] Manual check: diff the types against each `SPEC-*.md` contract section line by line
+- [x] RED: `src/types/contract.test.ts` written first → `npm run typecheck` → `TS2307: Cannot find module './cart'` ×4, **exit 2**
+- [x] GREEN: types created → typecheck exit 0; suite runs 14 tests (7 normalize + 7 contract), all passing
+- [x] **Contract proven**: temp `quantity: number` added to `CartItem` → `contract.test.ts(33,34): error TS2554`, **exit 2**; reverted → clean. The freeze is real, not decorative.
+- [x] Lint clean (exit 0), coverage 100%, `npm run build` succeeds
+- [x] Spec diff: each `src/types/*.ts` checked line-by-line against the `Output contract` sections of the four specs
 
 **Dependencies:** Task 1
-**Files likely touched:** `src/types/catalog.ts`, `src/types/nutrition.ts`, `src/types/cart.ts`, `src/types/swaps.ts`
+**Files likely touched:** `src/types/catalog.ts`, `src/types/nutrition.ts`, `src/types/cart.ts`, `src/types/swaps.ts`, plus `src/types/contract.test.ts` (compile-level contract tests via `expectTypeOf` — recorded deviation below)
 **Estimated scope:** S
+**Status:** ✅ Done 2026-10-06
+
+**Deviation:** Task 3's verification was "diff against specs", which proves the types match today but does nothing tomorrow. Since this task's whole purpose is freezing interfaces for parallel work, added a compile-level contract test using `expectTypeOf` — a widening of `source`, `basis`, `Reason['kind']`, or a `quantity` field now fails `npm run typecheck`. Types have no runtime behavior (the TDD skill's exemption), so the test lives at the compile boundary, which is where type drift actually happens.
 
 ---
 
@@ -89,29 +96,33 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Make the app installable and give it a service worker that precaches the shell, so it opens from the home screen with the network off. Done early because PWA plumbing is the piece most likely to force a tooling change, and finding that out after ten tasks is expensive.
 
 **Acceptance criteria:**
-- [ ] DevTools/application panel reports the app as installable, with a manifest (`name`, `lang: es`, icons, `display: standalone`)
-- [ ] Installed from the browser to the home screen on a phone
-- [ ] With the network off, opening the app renders the shell rather than the browser error page
-- [ ] Cache is versioned, so a new build does not serve a stale bundle
+- [x] DevTools/application panel reports the app as installable, with a manifest (`name`, `lang: es`, icons, `display: standalone`)
+- [ ] Installed from the browser to the home screen on a phone — *pending: needs the user's phone; the machine-checkable preconditions are verified below*
+- [x] With the network off, opening the app renders the shell rather than the browser error page
+- [x] Cache is versioned, so a new build does not serve a stale bundle (`registerType: 'autoUpdate'` — Workbox auto-update flow)
 
 **Verification:**
-- [ ] Build succeeds: `npm run build`
-- [ ] Manual check: `npm run preview`, install on the phone, then reload with airplane mode on
-- [ ] Manual check: new build replaces old cache (bump version, confirm change appears)
+- [x] RED: `tests/pwa-manifest.test.ts` written first → 3 failures (`ENOENT` on missing manifest), existing 14 still green, exit 1
+- [x] GREEN: manifest + icons + plugin → `Test Files 3 passed`, `Tests 17 passed`
+- [x] Typecheck, lint clean; build emits `sw.js`, `workbox-*.js`, `registerSW.js`, **precache 8 entries (222.69 KiB)**
+- [x] Runtime (real browser, preview build): manifest served (`lang: es`, `display: standalone`, 3 icons), service worker **registered → active → controlling the page** (scope `/`)
+- [x] Runtime offline: `context.setOffline(true)` → reload → title/heading/paragraph all render from cache, no error page
+- [ ] Manual, on the phone: install to home screen, open from the icon
 
 **Dependencies:** Task 1
-**Files likely touched:** `vite.config.ts`, `public/icons/*`, `index.html`, `src/app/App.tsx`
+**Files likely touched:** `vite.config.ts`, `public/manifest.webmanifest`, `public/icons/*`, `index.html`, `src/app/App.tsx`, `src/main.tsx`, plus `tests/pwa-manifest.test.ts`
 **Estimated scope:** S
+**Status:** ✅ Done 2026-10-06 (phone install pending user)
 
 ---
 
 ## Checkpoint: Foundation
 
-- [ ] All tests pass (`npm test`)
-- [ ] Application builds without errors (`npm run build`)
-- [ ] Lint and typecheck clean (`npm run lint`, `npm run typecheck`)
-- [ ] App installs to the phone and opens offline
-- [ ] Review with human before touching any data
+- [x] All tests pass (`npm test`) — 17/17
+- [x] Application builds without errors (`npm run build`) — precache 8 entries, 222.69 KiB
+- [x] Lint and typecheck clean (`npm run lint`, `npm run typecheck`)
+- [x] App shell installs and opens offline — **verified in a real browser** (SW registered → active → controlling; offline reload renders from cache). Home-screen install on the phone: pending user.
+- [ ] Review with human before touching any data ← **we are here**
 
 ---
 
