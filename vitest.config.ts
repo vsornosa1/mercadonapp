@@ -9,10 +9,11 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts', 'tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      // The coverage floor applies to the pure logic only. That is the code whose
-      // correctness the product actually rests on, and the code that is cheap to test.
-      include: ['src/lib/**/*.ts'],
-      exclude: ['src/lib/**/*.test.ts'],
+      // The coverage floor applies to pure logic only — the code whose correctness
+      // the product actually rests on: app logic in src/lib, and the data-pipeline
+      // pure functions in scripts (category lineage, additive parsing, enrichment).
+      include: ['src/lib/**/*.ts', 'scripts/**/*.ts'],
+      exclude: ['**/*.test.ts', 'scripts/fetch-catalog.ts'],
       reporter: ['text'],
       thresholds: {
         lines: 90,
