@@ -8,7 +8,7 @@ describe('summarizeCatalog', () => {
   const packaged: RawProduct = {
     id: 4241,
     ean: '8402001027482',
-    photos: [{ zoom: 'x' }],
+    photos: [{ regular: 'x', thumbnail: 'x' }],
     categories: [
       { id: 1, level: 0, name: 'root' },
       { id: 112, level: 1, name: 'Aceite' },

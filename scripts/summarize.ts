@@ -1,7 +1,22 @@
 export interface RawProduct {
   id: number | string;
   ean?: string | null;
-  photos?: unknown[] | null;
+  brand?: string | null;
+  display_name?: string;
+  slug?: string;
+  share_url?: string;
+  packaging?: string | null;
+  thumbnail?: string;
+  is_bulk?: boolean;
+  is_variable_weight?: boolean;
+  photos?: { regular?: string; thumbnail?: string }[] | null;
+  price_instructions?: {
+    unit_price?: string | null;
+    bulk_price?: string | null;
+    unit_size?: number | null;
+    size_format?: string | null;
+    reference_format?: string | null;
+  } | null;
   categories?: { id?: number; level?: number; name?: string }[] | null;
   nutrition_information?: { ingredients?: string | null; allergens?: string | null } | null;
 }

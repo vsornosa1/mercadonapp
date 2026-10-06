@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "data:fetch": "node scripts/fetch-catalog.ts",
+    "data:coverage": "node scripts/coverage-spike.ts",
+    "data:build": "node scripts/build-bundle.ts",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ."
