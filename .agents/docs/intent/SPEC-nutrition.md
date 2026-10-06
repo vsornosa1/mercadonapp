@@ -20,7 +20,7 @@ Give every product two honest things the Mercadona API refuses to provide: **num
 
 ```ts
 interface NutritionFacts {
-  source: 'off' | 'none';
+  source: 'off' | 'generic' | 'none';        // 'generic' is reserved: see the follow-on task, not yet populated
   offCode?: string;
   per100: {                                  // per 100 g / 100 ml, any field may be null
     kcal: number | null;
@@ -37,7 +37,7 @@ interface NutritionFacts {
 }
 
 interface ProcessingSignal {
-  basis: 'off-nova' | 'ingredient-heuristic';
+  basis: 'off-nova' | 'ingredient-heuristic' | 'category-rule';
   tier: 'unknown' | 'whole' | 'processed' | 'ultra-processed';
   additiveMarkers: string[];                 // the words that triggered it, so it can be shown
 }
@@ -75,7 +75,25 @@ Derived from Mercadona's ingredient HTML. Thresholds are ours, tunable, and **mu
 
 - E-number pattern: `E-?\d{3,4}[a-z]?` (case-insensitive; Mercadona writes both `E-407` and `E407`).
 - Additive markers: `aroma`, `aromas`, `colorante`, `conservador`, `estabilizante`, `espesante`, `emulgente`, `edulcorante`, `antioxidante`, `gasificante`, `potenciador del sabor`, `almidón modificado`.
-- `unknown` is a first-class answer. Absence of an ingredient list is **not** evidence of wholesomeness, and must never render as `whole`.
+- `unknown` is a first-class answer. Absence of an ingredient list is **not** evidence of wholesomeness, and must never render as `whole` — **except** where the category rule below explicitly applies, which is a rule, not an inference from absence.
+- `basis` must always be shown wherever a tier is shown, so a category rule is never mistaken for a measured additive count.
+
+## Category rule for barcode-less fresh foods
+
+**Measured 2026-10-06 against the real catalogue:** 490 products have no `ean`, no ingredients and no brand — Fruta/Verdura/Lechuga (160), Pescado fresco/Marisco (86), Carnes (107), Pan y bollería de horno (89), Huevos (11), Listo para Comer (23). With no barcode they **cannot** be joined to Open Food Facts, so without this rule the app would show `sin datos nutricionales` on every apple, chicken breast and egg — inverting the product's whole purpose.
+
+An explicit, per-category, hand-reviewed rule assigns a tier with `basis: 'category-rule'`:
+
+| Categories | Tier | Rationale |
+|---|---|---|
+| Fruta, Verdura, Lechuga, Pescado fresco, Marisco, Carnes (cerdo/vacuno/aves/conejo), Huevos, Patata | `whole` | single-ingredient foods as sold |
+| Pan de horno, Bollería de horno, Listo para Comer, Embutido (counter) | `unknown` | prepared or processed; the absence of an ingredients list is not evidence of anything |
+
+Rules this rule obeys:
+- The category list is **data, not code buried in a branch** — a reviewed table, so adding or removing a category is a visible change.
+- A product with an EAN **never** takes the category rule; the EAN path always wins.
+- `basis: 'category-rule'` is rendered differently from a measured signal, because it asserts nothing about that specific product beyond its category.
+- These products have **no macros**. The UI says so plainly; it does not show zero, dashes, or blanks.
 
 ## Politeness and caching
 
