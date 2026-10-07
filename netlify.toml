@@ -1,0 +1,11 @@
+[build]
+  # No network at build time: the catalogue is committed under public/catalog/.
+  # Node 22 is required — the data scripts rely on Node's native TypeScript type-stripping.
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# `public/_headers` is copied to `dist/_headers` and honoured by Netlify and
+# Cloudflare Pages: it sets the CSP and the cache policy for /sw.js.

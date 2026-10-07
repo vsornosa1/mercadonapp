@@ -23,13 +23,20 @@ Instalable, funciona sin conexión, y **no hace ninguna petición a los servidor
 
 ```bash
 npm ci
-npm run data:fetch     # descarga el catálogo del espejo (≈3 min) → data/raw/
-npm run data:build     # emite el bundle → public/catalog/
-npm run build          # build de la PWA → dist/
+npm run build          # verifica el catálogo y construye la PWA → dist/
 npm run preview        # sirve el build de producción
 ```
 
-`data:fetch` descarga el espejo una sola vez; `data/build` y `data:enrich` leen de ahí. El enriquecimiento (ver abajo) está **versionado** en `data/enriched/`, así que normalmente **no** necesitas ejecutarlo — un clon limpio llega a la app funcionando con los tres comandos de arriba.
+Eso es todo: el catálogo enriquecido está versionado en `public/catalog/`, así que **no hace falta red para construir**. `npm run build` comprueba primero que el catálogo existe y falla con un mensaje claro si no.
+
+Solo si quieres **actualizar los datos** (el espejo cambia cada semana):
+
+```bash
+npm run data:fetch     # descarga el espejo (≈3 min) → data/raw/
+npm run data:build     # regenera public/catalog/products.json
+```
+
+Consulta el pipeline completo más abajo.
 
 ## Pipeline de datos
 
@@ -37,8 +44,10 @@ npm run preview        # sirve el build de producción
 |---|---|---|---|
 | `npm run data:fetch` | Descarga el espejo del catálogo | `data/raw/` (ignorado) | Hugging Face |
 | `npm run data:enrich` | Une cada EAN con Open Food Facts y calcula la señal de procesamiento | `data/enriched/` (**versionado**) | Open Food Facts |
-| `npm run data:build` | Emite el bundle final (catálogo + nutrición) | `public/catalog/` (generado) | — |
+| `npm run data:build` | Emite el bundle final (catálogo + nutrición) | `public/catalog/` (**versionado**) | — |
 | `npm run data:coverage` | Mide la cobertura real de Open Food Facts sobre una muestra | `data/raw/coverage-sample.json` | Open Food Facts |
+
+Los dos artefactos derivados caros —`data/enriched/` y `public/catalog/`— están **versionados a propósito**: el enriquecimiento cuesta miles de peticiones a Open Food Facts, y el bundle hace que el despliegue sea un `npm ci && npm run build` sin red y sin depender de que el espejo esté disponible en el momento del build.
 
 **Cobertura medida (2026-10-07):** kcal en el 46 % del catálogo completo (~50 % de los envasados), grupo NOVA en el 36 %, aditivos vía ingredientes de Mercadona en el 64 %. Los frescos (fruta, verdura, pescado, carne) no tienen código de barras real, así que usan la regla por categoría.
 

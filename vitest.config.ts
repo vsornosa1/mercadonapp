@@ -19,6 +19,7 @@ export default defineConfig({
         'scripts/coverage-spike.ts',
         'scripts/build-bundle.ts',
         'scripts/enrich-run.ts',
+        'scripts/ensure-catalog.ts',
       ],
       reporter: ['text'],
       thresholds: {

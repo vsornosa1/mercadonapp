@@ -133,17 +133,37 @@ is simply "does it work on the phone".
 
 ## Deploy
 
-The build is a static folder; any static host works.
+The build is a static folder. **No network and no data pipeline run at build time** — the
+enriched catalogue is committed, so a host's default build works as-is.
 
 ```bash
 npm ci
-npm run data:fetch     # only if data/raw is absent
-npm run data:build
-npm run build          # → dist/
+npm run build          # runs the catalogue guard, then vite build → dist/
 ```
 
-Publish `dist/`. `/catalog/products.json` **must** be served (it is the catalogue), and
-`/sw.js` must not be cached.
+Publish `dist/`.
 
-Verify your host honours `public/_headers` (Netlify, Cloudflare Pages do; GitHub Pages
-does not — add the headers at the CDN if you use it).
+### Netlify / Cloudflare Pages
+
+`netlify.toml` is committed, so either host works with no dashboard configuration:
+
+- **Build command:** `npm run build`
+- **Publish directory:** `dist`
+- **Node 22** — required, because the data scripts use Node's native TypeScript
+  type-stripping. Set in `netlify.toml` and in `.nvmrc`.
+
+`public/_headers` is copied to `dist/_headers` and honoured by both hosts: it sets the
+CSP and prevents `/sw.js` from being cached (a cached service worker cannot be updated).
+
+### The catalogue guard
+
+`npm run build` runs `prebuild` → `scripts/ensure-catalog.ts`, which **fails the build**
+if `public/catalog/products.json` is missing, unparseable, not an array, or has fewer than
+1 000 products. Without it, a host that never ran the data pipeline would deploy an app
+where search silently returns nothing — a failure that looks like "no results" rather than
+a broken deploy.
+
+### Other hosts
+
+GitHub Pages does **not** read `_headers`; set the headers at the CDN instead. Everything
+else (serving `dist/`, `catalog/products.json` reachable, `/sw.js` uncached) is the same.

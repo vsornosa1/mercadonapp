@@ -1,11 +1,12 @@
 node_modules/
 dist/
-public/catalog/
 *.local
 .DS_Store
 
 # Data pipeline.
 # data/raw and data/cache are cheap to re-download, and re-downloading them is polite to the source.
 # data/enriched is committed on purpose: rebuilding it means thousands of requests to Open Food Facts.
+# public/catalog is committed too: it makes deploys a plain `npm ci && npm run build`,
+# with no network and no dependence on the mirror being reachable at build time.
 data/raw/
 data/cache/

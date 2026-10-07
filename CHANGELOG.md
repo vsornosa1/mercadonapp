@@ -18,6 +18,8 @@ Primera versión: un asistente de nutrición para la compra en Mercadona, instal
 - **`ErrorBoundary`** con recuperación en español, para que un fallo no deje una pantalla en blanco.
 - **Cabeceras de seguridad** (`public/_headers`): CSP estricta, `nosniff`, `frame-ancestors 'none'`, `Permissions-Policy`.
 - **Pipeline de datos reproducible**: `data:fetch`, `data:enrich`, `data:build`, `data:coverage`.
+- **Guardia de despliegue**: `npm run build` falla con un mensaje claro si falta el catálogo, para que un host mal configurado no publique una app cuya búsqueda no devuelve nada.
+- **`netlify.toml` + `.nvmrc`** con Node 22, para que Netlify y Cloudflare Pages funcionen sin configurar nada.
 
 ### Security
 
