@@ -20,6 +20,7 @@ export default defineConfig({
         'scripts/build-bundle.ts',
         'scripts/enrich-run.ts',
         'scripts/ensure-catalog.ts',
+        'scripts/audit-alternatives.ts',
       ],
       reporter: ['text'],
       thresholds: {
