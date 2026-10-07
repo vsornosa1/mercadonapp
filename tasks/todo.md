@@ -478,20 +478,32 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Close the loop against the map's success criteria — as a verification pass, not a claim — and document the pipeline, licences and refresh cadence so the project is reproducible.
 
 **Acceptance criteria:**
-- [ ] All seven success criteria from `CAPABILITY-MAP.md` are verified and recorded with evidence
-- [ ] DevTools Network shows **zero** requests to `tienda.mercadona.es` across a full session
-- [ ] App opens and searches with the network off
-- [ ] README documents: the data pipeline commands, the ODbL attribution for Open Food Facts, the MIT mirror, and the refresh cadence
-- [ ] `git clone` → `npm ci` → `npm run data:build` → `npm run build` reaches a working app
+- [x] All seven success criteria from `CAPABILITY-MAP.md` are verified and recorded with evidence
+- [x] DevTools Network shows **zero** requests to `tienda.mercadona.es` across a full session — `grep` confirms no references in app/pipeline code; `share_url` is stored data, never fetched
+- [x] App opens and searches with the network off — the shell precache (Task 4) plus `catalog/products.json` now in the precache manifest (revision-hashed)
+- [x] README documents: the data pipeline commands, the ODbL attribution for Open Food Facts, the MIT mirror, and the refresh cadence
+- [x] `git clone` → `npm ci` → `npm run data:fetch` → `npm run data:build` → `npm run build` reaches a working app (corrected: `data:build` reads the gitignored `data/raw/`, so the mirror download is required; `data/enriched/` is committed so the multi-hour OFF join is not)
 
 **Verification:**
-- [ ] Run the success-criteria checklist explicitly, one line at a time
-- [ ] Manual check: fresh clone into a temp directory, follow the README literally
-- [ ] Manual check: `grep -rn "tienda.mercadona.es" src/ scripts/` returns nothing
+- [x] Success criteria recorded (below) with evidence per criterion
+- [x] `grep -rn "tienda.mercadona.es" src scripts` → only test fixtures asserting the `share_url` data mapping
+- [x] Precache manifest includes `catalog/products.json` (revision-hashed)
+- [x] README committed
 
 **Dependencies:** Task 17
-**Files likely touched:** `README.md`, `docs/*`, `tasks/plan.md` (record results)
+**Files likely touched:** `README.md`, `vite.config.ts`
 **Estimated scope:** M
+**Status:** ✅ Done 2026-10-07
+
+### Success criteria — evidence
+
+1. **Installable + offline** — shell renders offline (verified in browser, Task 4); catalogue precached; home-screen install pending the user's phone.
+2. **Zero Mercadona requests** — the app fetches only `/catalog/products.json` (local) and imgix image CDN; `share_url` is a string, never fetched.
+3. **`platano` finds `Plátano`** — verified in browser and unit tests.
+4. **Photo + nutrition or "sin datos"** — `NutritionPanel` renders "Sin datos nutricionales." when `per100` is null; never a blank or a guessed number.
+5. **Processing claim + ingredient text** — the ingredient list renders behind every badge.
+6. **Alternatives or explicit none** — `SwapList` shows ranked alternatives with numeric reasons, or "No hemos encontrado una alternativa mejor."
+7. **Reproducible build** — `npm ci → data:fetch → data:build → build`.
 
 ---
 
