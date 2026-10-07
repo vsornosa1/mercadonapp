@@ -1,0 +1,296 @@
+/* Mercadonapp design tokens and base styles. Mercadona-inspired: one green,
+   flat surfaces, tight information density — built for a phone in an aisle. */
+
+:root {
+  --color-primary: #00a650;
+  --color-primary-dark: #00843f;
+  --color-primary-tint: #e7f6ec;
+  --color-bg: #ffffff;
+  --color-surface: #f4f5f0;
+  --color-text: #161616;
+  --color-text-muted: #6b6d68;
+  --color-border: #e3e4de;
+  --color-danger: #b3261e;
+  --color-danger-tint: #fdecea;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+
+  --shadow-sm: 0 1px 2px rgba(22, 22, 22, 0.08);
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font-family: inherit;
+}
+
+img {
+  display: block;
+}
+
+/* ---- App shell ---- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.app-header__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.app-main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 var(--space-4) var(--space-6);
+}
+
+/* ---- Search ---- */
+.search-bar {
+  margin: var(--space-4) 0;
+}
+
+.search-bar__field {
+  position: relative;
+}
+
+.search-bar__icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.search-bar__input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) 2.5rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.search-bar__input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+  background: var(--color-bg);
+}
+
+/* ---- Product list ---- */
+.product-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.product-row__thumb {
+  flex: none;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-surface);
+}
+
+.product-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-row__name {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-row__brand {
+  margin: var(--space-1) 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.product-row__price {
+  flex: none;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.product-row__unit {
+  flex: none;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ---- Category browse ---- */
+.category-heading {
+  margin: var(--space-2) 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.category-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.category-chip {
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.category-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+/* ---- States ---- */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.state__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.state__hint {
+  margin: 0;
+  font-size: 0.875rem;
+  max-width: 20rem;
+}
+
+/* ---- Skeleton ---- */
+.skeleton {
+  animation: pulse 1.4s ease-in-out infinite;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.skeleton__thumb {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.skeleton__line {
+  height: 0.875rem;
+  flex: 1;
+}
+
+/* ---- Visually hidden ---- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Accessibility ---- */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
