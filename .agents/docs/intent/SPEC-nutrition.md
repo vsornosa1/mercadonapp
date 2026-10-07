@@ -74,7 +74,7 @@ Derived from Mercadona's ingredient HTML. Thresholds are ours, tunable, and **mu
 | ≥ 3 E-numbers, or ≥ 2 markers | `ultra-processed` |
 
 - E-number pattern: `E-?\d{3,4}[a-z]?` (case-insensitive; Mercadona writes both `E-407` and `E407`).
-- Additive markers: `aroma`, `aromas`, `colorante`, `conservador`, `estabilizante`, `espesante`, `emulgente`, `edulcorante`, `antioxidante`, `gasificante`, `potenciador del sabor`, `almidón modificado`.
+- Additive markers: `aroma`, `aromas`, `colorante`, `conservador`, `estabilizante`, `espesante`, `emulgente`, `edulcorante`, `antioxidante`, `gasificante`, `potenciador del sabor`, `almidón modificado`, plus **added-sugar signals** `azúcar`, `jarabe`, `glucosa`, `fructosa`, `dextrosa`, `melaza` (added 2026-10-07 after sweetened products like condensed milk were misclassified "whole" — added sugar is a processing signal even without E-numbers).
 - `unknown` is a first-class answer. Absence of an ingredient list is **not** evidence of wholesomeness, and must never render as `whole` — **except** where the category rule below explicitly applies, which is a rule, not an inference from absence.
 - `basis` must always be shown wherever a tier is shown, so a category rule is never mistaken for a measured additive count.
 

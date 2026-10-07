@@ -54,4 +54,14 @@ describe('extractAdditiveMarkers', () => {
   it('returns nothing for a plain single-ingredient text', () => {
     expect(extractAdditiveMarkers('100% Pollo')).toEqual([]);
   });
+
+  it('detects added sugar as a processing marker', () => {
+    expect(extractAdditiveMarkers('leche desnatada y azúcar')).toContain('azúcar');
+  });
+
+  it('detects sugar syrups and isolated sugars', () => {
+    expect(extractAdditiveMarkers('jarabe de glucosa y fructosa')).toEqual(
+      expect.arrayContaining(['jarabe', 'glucosa', 'fructosa']),
+    );
+  });
 });

@@ -5,8 +5,10 @@ interface Marker {
   norm: string;
 }
 
-// Canonical additive-class words. Singular stems match their plurals; the
+// Canonical processing markers. Singular stems match their plurals; the
 // norm form is accent-folded so matching works against ingredient text.
+// Added-sugar signals (azúcar, jarabe, isolated sugars) are included because
+// sweetened products are processed even without E-numbers.
 const MARKERS: Marker[] = [
   'aroma',
   'colorante',
@@ -19,6 +21,12 @@ const MARKERS: Marker[] = [
   'gasificante',
   'potenciador del sabor',
   'almidón modificado',
+  'azúcar',
+  'jarabe',
+  'glucosa',
+  'fructosa',
+  'dextrosa',
+  'melaza',
 ].map((display) => ({ display, norm: normalizeText(display) }));
 
 /**

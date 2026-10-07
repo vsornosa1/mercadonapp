@@ -23,6 +23,10 @@ describe('classifyProcessing', () => {
     expect(classifyProcessing('Aceite de oliva refinado y virgen extra').tier).toBe('whole');
   });
 
+  it('classifies a sweetened product as processed, never whole', () => {
+    expect(classifyProcessing('leche desnatada y azúcar').tier).toBe('processed');
+  });
+
   it('returns processed for a single E-number', () => {
     expect(classifyProcessing('estabilizante E-407').tier).toBe('processed');
   });
