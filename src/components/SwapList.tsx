@@ -1,11 +1,38 @@
 import type { AlternativesResult } from '../lib/alternatives.ts';
-import { formatPrice, formatReason } from '../lib/format.ts';
+import { toBenefit, toCost } from '../lib/benefits.ts';
+import { formatPrice } from '../lib/format.ts';
 import type { Swap } from '../types/swaps.ts';
 import { BenefitChips } from './BenefitChips.tsx';
 
 interface SwapListProps {
   result: AlternativesResult;
   onSelect: (swap: Swap) => void;
+}
+
+/** What a recommendation gives up, if anything. Never smaller than the benefit. */
+function CostNote({ swap }: { swap: Swap }) {
+  if (!swap.cost) return null;
+  const cost = toCost(swap.cost);
+  return (
+    <ul className="costs" role="list">
+      <li className="cost">
+        <span className="cost__prefix">A cambio:</span>
+        <span className="cost__label">{cost.label}</span>
+        <span className="cost__delta">{cost.delta}</span>
+      </li>
+    </ul>
+  );
+}
+
+function accessibleName(swap: Swap): string {
+  const benefits = swap.reasons
+    .map((reason) => {
+      const benefit = toBenefit(reason);
+      return `${benefit.label}, ${benefit.delta}`;
+    })
+    .join('; ');
+  const cost = swap.cost ? `. A cambio: ${toCost(swap.cost).label}, ${toCost(swap.cost).delta}` : '';
+  return `Ver ${swap.product.name}. Mejor: ${benefits}${cost}`;
 }
 
 export function SwapList({ result, onSelect }: SwapListProps) {
@@ -51,14 +78,13 @@ export function SwapList({ result, onSelect }: SwapListProps) {
               type="button"
               className="swap-item"
               onClick={() => onSelect(swap)}
-              aria-label={`Ver ${swap.product.name}. Mejor: ${swap.reasons
-                .map(formatReason)
-                .join('; ')}`}
+              aria-label={accessibleName(swap)}
             >
               <img className="swap-item__thumb" src={swap.product.thumbnail} alt="" loading="lazy" />
               <span className="swap-item__body">
                 <span className="swap-item__name">{swap.product.name}</span>
                 <BenefitChips reasons={swap.reasons} />
+                <CostNote swap={swap} />
               </span>
               <span className="swap-item__aside">
                 <span className="swap-item__price">{formatPrice(swap.product.unitPrice)}</span>

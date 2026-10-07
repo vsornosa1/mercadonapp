@@ -1,9 +1,9 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
 import type { Cart, CartItem } from './cart';
-import type { CatalogProduct } from './catalog';
+import type { CatalogProduct, EnrichedCatalogProduct } from './catalog';
 import type { NutritionFacts, NutritionIndex, ProcessingSignal } from './nutrition';
-import type { Reason, Swap } from './swaps';
+import type { Reason, Swap, TradeOff } from './swaps';
 
 // Compile-level contract tests. Task 3 freezes these interfaces so the nutrition
 // and cart work streams can build in parallel without drifting. A widening here
@@ -36,9 +36,17 @@ describe('domain type contracts', () => {
 
   it('keeps Reason a discriminated union — a swap must say why', () => {
     expectTypeOf<Reason['kind']>().toEqualTypeOf<
-      'additives' | 'nova' | 'protein' | 'sugars' | 'salt'
+      'tier' | 'additives' | 'nova' | 'protein' | 'sugars' | 'salt'
     >();
     expectTypeOf<Swap['reasons']>().toEqualTypeOf<Reason[]>();
+  });
+
+  it('freezes the disclosed cost on a swap — at most one, and explicitly nullable', () => {
+    expectTypeOf<Swap['cost']>().toEqualTypeOf<TradeOff | null>();
+  });
+
+  it('types a swap product as enriched, so the UI can read the tier it renders', () => {
+    expectTypeOf<Swap['product']>().toEqualTypeOf<EnrichedCatalogProduct>();
   });
 
   it('types the nutrition lookup used by swap ranking', () => {

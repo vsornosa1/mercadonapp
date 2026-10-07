@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toBenefit } from './benefits.ts';
+import { toBenefit, toCost } from './benefits.ts';
 
 describe('toBenefit', () => {
   it('describes more protein as a gain, with per-100g units', () => {
@@ -60,5 +60,45 @@ describe('toBenefit', () => {
     expect(toBenefit({ kind: 'protein', from: 4.8048048048048, to: 10.555 }).delta).toBe(
       '4,8 g → 10,6 g por 100 g',
     );
+  });
+
+  it('describes a tier improvement in processing words, without borrowing NOVA vocabulary', () => {
+    expect(toBenefit({ kind: 'tier', from: 'ultra-processed', to: 'whole' })).toEqual({
+      label: 'Menos procesado',
+      delta: 'De ultraprocesado a entero',
+      direction: 'down',
+    });
+  });
+
+  it('does not use the word NOVA when describing a tier change', () => {
+    const benefit = toBenefit({ kind: 'tier', from: 'processed', to: 'whole' });
+    expect(benefit.delta).not.toContain('NOVA');
+  });
+});
+
+describe('toCost', () => {
+  it("states the cost from the user's point of view — MORE sugar, not fewer", () => {
+    expect(toCost({ kind: 'sugars', from: 12, to: 14 })).toEqual({
+      label: 'Más azúcar',
+      delta: '12 g → 14 g',
+    });
+  });
+
+  it('frames less protein as a cost', () => {
+    expect(toCost({ kind: 'protein', from: 9, to: 5 })).toEqual({
+      label: 'Menos proteína',
+      delta: '9 g → 5 g por 100 g',
+    });
+  });
+
+  it('frames more salt as a cost', () => {
+    expect(toCost({ kind: 'salt', from: 0.1, to: 0.3 })).toEqual({
+      label: 'Más sal',
+      delta: '0,1 g → 0,3 g',
+    });
+  });
+
+  it('rounds the numbers like every other figure', () => {
+    expect(toCost({ kind: 'salt', from: 0.1, to: 0.198 }).delta).toBe('0,1 g → 0,2 g');
   });
 });

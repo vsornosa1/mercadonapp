@@ -33,6 +33,7 @@ const base: EnrichedCatalogProduct = {
 };
 
 const richSignals: SwapSignals = {
+  tier: 'ultra-processed',
   additiveCount: 2,
   additiveCodes: ['407'],
   novaGroup: 4,
@@ -41,6 +42,7 @@ const richSignals: SwapSignals = {
   salt: 0.2,
 };
 const cleanSignals: SwapSignals = {
+  tier: 'whole',
   additiveCount: 0,
   additiveCodes: [],
   novaGroup: 1,
@@ -151,15 +153,16 @@ describe('ProductScreen', () => {
     expect(screen.getByText(/Sodium Laureth Sulfate/)).toBeInTheDocument();
   });
 
-  it('labels a category-rule whole food distinctly', () => {
+  it('labels a category-rule whole food as fresh, not as a whole-food claim', () => {
     renderScreen({
       product: {
         ...base,
         processing: { basis: 'category-rule', tier: 'whole', additiveMarkers: [] },
       },
     });
-    expect(screen.getByText('Alimento entero')).toBeInTheDocument();
-    expect(screen.getByText('Clasificación por categoría')).toBeInTheDocument();
+    expect(screen.getByText('Fresco')).toBeInTheDocument();
+    expect(screen.getByText('por categoría')).toBeInTheDocument();
+    expect(screen.queryByText('Alimento entero')).not.toBeInTheDocument();
   });
 
   it('calls onBack when the back button is tapped', async () => {

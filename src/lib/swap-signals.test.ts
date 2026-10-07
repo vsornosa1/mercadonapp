@@ -65,4 +65,11 @@ describe('swapSignalsFor', () => {
     expect(signals.protein).toBeNull();
     expect(signals.novaGroup).toBeNull();
   });
+
+  it('carries the composed tier the UI displays, so the ranking can see its own badge', () => {
+    const p = enriched({
+      processing: { basis: 'off-nova', tier: 'ultra-processed', additiveMarkers: [] },
+    });
+    expect(swapSignalsFor(p).tier).toBe('ultra-processed');
+  });
 });

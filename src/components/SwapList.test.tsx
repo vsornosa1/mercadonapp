@@ -32,6 +32,7 @@ const swaps: Swap[] = [
   {
     product: alt,
     score: 2,
+    cost: null,
     reasons: [
       { kind: 'additives', from: 3, to: 0, detail: [] },
       { kind: 'protein', from: 3, to: 9 },
@@ -67,6 +68,37 @@ describe('SwapList', () => {
     expect(name).toMatch(/menos aditivos/i);
     expect(name).toMatch(/más proteína/i);
     expect(name).toMatch(/3 g → 9 g/);
+  });
+});
+
+describe('SwapList — disclosed cost', () => {
+  const withCost: Swap[] = [
+    {
+      product: alt,
+      score: 2,
+      cost: { kind: 'sugars', from: 12, to: 14 },
+      reasons: [{ kind: 'tier', from: 'ultra-processed', to: 'whole' }],
+    },
+  ];
+
+  it('shows the cost alongside the benefit, not instead of it', () => {
+    render(<SwapList result={{ kind: 'available', swaps: withCost }} onSelect={vi.fn()} />);
+    expect(screen.getByText('Menos procesado')).toBeInTheDocument();
+    expect(screen.getByText('Más azúcar')).toBeInTheDocument();
+    expect(screen.getByText('12 g → 14 g')).toBeInTheDocument();
+  });
+
+  it('renders no cost element when there is nothing to give up', () => {
+    render(<SwapList result={{ kind: 'available', swaps }} onSelect={vi.fn()} />);
+    expect(document.querySelector('.swap-item__cost')).toBeNull();
+  });
+
+  it('includes the cost in the accessible name, so it is not a visual-only caveat', () => {
+    render(<SwapList result={{ kind: 'available', swaps: withCost }} onSelect={vi.fn()} />);
+    const name = screen.getByRole('button', { name: /Yogur natural/ }).getAttribute('aria-label') ?? '';
+    expect(name).toMatch(/a cambio/i);
+    expect(name).toMatch(/más azúcar/i);
+    expect(name).toMatch(/12 g → 14 g/);
   });
 
   it('omits the panel entirely for non-food — nutrition advice on shampoo is noise', () => {

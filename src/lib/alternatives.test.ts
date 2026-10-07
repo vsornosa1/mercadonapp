@@ -10,6 +10,7 @@ import type { SwapSignals } from './swaps.ts';
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 
 const richSignals: SwapSignals = {
+  tier: 'ultra-processed',
   additiveCount: 2,
   additiveCodes: ['407', '460'],
   novaGroup: 4,
@@ -19,6 +20,7 @@ const richSignals: SwapSignals = {
 };
 
 const emptySignals: SwapSignals = {
+  tier: 'unknown',
   additiveCount: null,
   additiveCodes: [],
   novaGroup: null,
@@ -154,8 +156,8 @@ describe('evaluateAlternatives', () => {
     const target = product(1, 'Aceite malo', pathOf(FOOD, SHELF, LEAF), LEAF_ID);
     const better = product(2, 'Aceite bueno', pathOf(FOOD, SHELF, LEAF), LEAF_ID);
     const signals = new Map<number, SwapSignals>([
-      [1, { additiveCount: 3, additiveCodes: ['407'], novaGroup: 4, protein: 1, sugars: 5, salt: 1 }],
-      [2, { additiveCount: 0, additiveCodes: [], novaGroup: 1, protein: 9, sugars: 1, salt: 0.1 }],
+      [1, { tier: 'ultra-processed', additiveCount: 3, additiveCodes: ['407'], novaGroup: 4, protein: 1, sugars: 5, salt: 1 }],
+      [2, { tier: 'whole', additiveCount: 0, additiveCodes: [], novaGroup: 1, protein: 9, sugars: 1, salt: 0.1 }],
     ]);
 
     const result = evaluateAlternatives(target, [target, better], signals);
@@ -171,7 +173,7 @@ describe('evaluateAlternatives', () => {
       900,
     );
     const signals = new Map<number, SwapSignals>([
-      [3, { additiveCount: 2, additiveCodes: [], novaGroup: 4, protein: null, sugars: null, salt: null }],
+      [3, { tier: 'ultra-processed', additiveCount: 2, additiveCodes: [], novaGroup: 4, protein: null, sugars: null, salt: null }],
     ]);
     expect(evaluateAlternatives(shampoo, [shampoo], signals)).toEqual({ kind: 'non-food' });
   });
@@ -187,6 +189,7 @@ describe('evaluateAlternatives', () => {
     const peerA = product(6, 'Leche A', pathOf(FOOD, SHELF, LEAF), LEAF_ID);
     const peerB = product(7, 'Leche B', pathOf(FOOD, SHELF, LEAF), LEAF_ID);
     const identical: SwapSignals = {
+      tier: 'whole',
       additiveCount: 0,
       additiveCodes: [],
       novaGroup: 1,
@@ -209,6 +212,7 @@ describe('evaluateAlternatives', () => {
     const target = product(8, 'Objetivo', pathOf(FOOD, SHELF, LEAF), LEAF_ID);
     const otherShelf = product(9, 'Otro', pathOf(FOOD, [115, 'Especias'], [500, 'Pimienta']), 500);
     const identical: SwapSignals = {
+      tier: 'whole',
       additiveCount: 0,
       additiveCodes: [],
       novaGroup: 1,

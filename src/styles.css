@@ -508,6 +508,37 @@ img {
   font-variant-numeric: tabular-nums;
 }
 
+/* ---- Disclosed cost ----
+   A trade-off must read with the same weight as the benefit, never smaller, or
+   the recommendation is misleading by layout. Same font size, its own colour. */
+.costs {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+}
+
+.cost {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.cost__prefix {
+  color: var(--color-text-muted);
+}
+
+.cost__label {
+  font-weight: 600;
+  color: var(--color-warning);
+}
+
+.cost__delta {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---- Recommendation banner ---- */
 .recommendation {
   margin: var(--space-3) 0 var(--space-4);

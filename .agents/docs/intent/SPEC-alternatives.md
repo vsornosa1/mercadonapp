@@ -8,6 +8,8 @@ The alternatives engine tells the user which product is better. An audit of all 
 
 The goal is not "more alternatives". It is **recommendations that are defensible when the user reads them**, and honest when there is nothing to recommend.
 
+§10 records how Yuka, MyRealFood and Nutri-Score solve the same problem, and why we are **not** adopting an established score.
+
 ## 2. Problem statement — measured, not assumed
 
 Audit of the real catalogue (`scripts/audit-alternatives.ts`, 4,330 products; food = 3,007, non-food = 1,323):
@@ -194,32 +196,128 @@ Vitest, colocated. The revised ranking is pure logic, so it carries the weight:
 - Treat `unknown` as better or worse than a known tier.
 - Return a swap whose extracted reasons are empty.
 - Present a macro-only swap as "healthier".
+- Compute and display a score under an official label's name (Nutri-Score, NOVA) from partial data — see §10.
 - Weaken a test to make the new ranking pass.
 
 ## 9. Success criteria
 
-Re-measured by `node scripts/audit-alternatives.ts`; the *before* column is the current output and the *after* must be produced by the same script.
+Re-measured by `node scripts/audit-alternatives.ts`; the *before* column is the pre-v2 output and the *after* is produced by the same script. Results in §11.
 
 | # | Criterion | Before | After |
 |---|---|---|---|
 | 1 | Recommendations with a worse displayed tier | **85** | **0** |
 | 2 | Better-tier peers dropped for lack of an expressible reason | **216** | **0** |
-| 3 | Better-tier peers discarded by an undisclosed trade-off | **181** | **0** — each offered *with a visible cost*, or explicitly rejected with a stated reason |
-| 4 | Recommendations that improve the processing tier | 548 of 1,510 | **>1,100 of 1,510**, the rest labelled as macro swaps |
+| 3 | Acceptable better-tier peers not offered at all | **181** | **0 of the achievable ceiling** |
+| 4 | Recommendations that improve the processing tier | 548 of 1,510 | **the full achievable ceiling** (derived by the script, not a round number) |
 | 5 | `unknown` appears as an improvement in any reason | possible | never |
-| 6 | "Alimento entero" shown for a product whose label rests only on the ingredient heuristic | 473 products | **0** |
+| 6 | A heuristic tier presented as a whole-food claim | 473 products | **0** |
 | 7 | Full suite green · coverage ≥90% · typecheck · lint | ✓ | ✓ |
 
 Criterion 8: every number in §2 is reproduced by the audit script in a single run, so none of it is asserted from memory.
 
-## 10. Open questions
+**Note on criterion 4:** the first draft used a hand-picked target (>1,100). That was a guess dressed as a criterion. The script now *derives* the ceiling from the acceptance rules — the set of products with at least one better-tier peer that regresses on no processing dimension and at most one macro — and the criterion is "offered ≥ achievable". A criterion that cannot be reached is a bug in the criterion.
 
-**Q1 — Comparator divergence (blocking).** Yuka and MyRealFood both score products, and if either uses an established standard (Nutri-Score, NOVA, SAIN-LIM) we should adopt it rather than extend our own heuristic. Research is in flight; the findings will decide whether §3 is a patch to our engine or a replacement with a standard score. **This may change §3 substantially.**
+## 10. Comparator analysis — Yuka, MyRealFood, Nutri-Score
 
-**Q2 — Tier labels.** Renaming "Alimento entero" to "Sin aditivos" is accurate but weaker copy, and "Sin aditivos" could itself overclaim (a product can be additive-free and still industrially processed). Options: (a) rename by basis as proposed; (b) keep one label set but only show `whole` when there is NOVA or category-rule backing, showing "Sin aditivos" for the heuristic; (c) drop labels entirely and show the raw evidence (additive count + ingredient list). Which do you want?
+Researched to answer the question *"should we adopt an established score instead of patching our own engine?"* Sources are cited; anything unverified is marked.
 
-**Q3 — Trade-off appetite.** §3.4 allows one disclosed macro regression. Is any regression acceptable with disclosure, or should processing-only improvements be the hard rule and macros strictly a tie-breaker?
+### Yuka
 
-**Q4 — Non-food.** Confirmed correct: no alternatives panel for the 1,361 non-food products. Should the *audit* exclude them from the success criteria (it currently does), so the numbers stay comparable across runs?
+| Aspect | Finding |
+|---|---|
+| Scale | **0–100**, higher is better |
+| Components | **Three**, not two: nutrition **60%**, additives **30%**, organic bonus **10%** |
+| Nutrition input | Explicitly **Nutri-Score** (sugar, sodium, saturated fat, energy, protein, fibre, fruit/veg) |
+| Additives | Each additive graded green/yellow/orange/red from EFSA/IARC and independent studies |
+| Hard cap | **Any high-risk additive caps the total at 49/100** — so the additive dimension can outweigh its nominal 30% |
+| NOVA / ultra-processed | **Not a documented scoring input.** Processing appears only indirectly, through additives |
+| Missing nutrition | **No rating at all.** Yuka also leaves unrated: alcohol, sugar, infant formula, supplements, pet food, and **products sold by weight** |
 
-**Q5 — Shelf widening.** The audit re-confirmed **widening from leaf to shelf adds 0 qualifying swaps** (though 899 products have a better-tier peer somewhere in the shelf). If §3.4 loosens the Pareto rule this may change — worth re-measuring after implementation rather than assuming.
+Verified: `help.yuka.io` "How are food products scored?", "Products with no nutritional values", "Unrated food products".
+
+**What we take from it:**
+1. **The hard cap is precedent for §3.3.** Yuka does not let a good macro profile outvote a bad additive profile — it caps the score. Our §3.3 ("processing outranks macros") is a weaker version of the same principle, which is reassuring about the direction.
+2. **Yuka does not answer our question.** It has no processing tier, so our defect — *a ranking blind to the tier it displays* — is not one Yuka can have, and its architecture is not a fix for ours.
+3. **Our no-data behaviour is deliberately more informative.** Yuka shows nothing for a product with no nutrition; we show an additive-based tier plus "Sin datos nutricionales". That is a defensible divergence, and it is precisely why §2.6 matters: if we show a tier where Yuka shows nothing, the label must not overclaim.
+
+### MyRealFood
+
+**Unverified.** First-party sources were unreachable (404 / JS-only), and search engines were blocked. The widely repeated heuristic — *ultraprocesado = more than 5 ingredients and/or cosmetic additives* — **could not be confirmed against any official document** and must not be treated as fact. Note that even if true, it would **not** fix the §2.6 case: `Café en cápsula` lists one ingredient (`100% café molido`), so that rule would also call it fine. The problem there is the *label*, not the classification.
+
+### Nutri-Score
+
+- **Publicly and fully specified**, so technically implementable: negative points (energy, sugar, saturated fat, salt) minus positive points (fibre, protein, fruit/veg/legumes/nuts), range ≈ −15…+40, mapped A–E with category-specific rules (general, fats/oils/nuts/seeds, beverages, cheese).
+- **Revised**: 2022 committee recommendations (rescaled sugar/salt/fibre/protein, protein-cap exemption removed, nuts/seeds moved, red-meat rules), effective 2024.
+- **Licence terms: unverified.**
+
+**Why we should NOT implement it**, despite the appeal:
+
+1. **We lack an input.** Nutri-Score's positive points include **% fruit/vegetables/legumes/nuts**, which Open Food Facts does not give us for most products. A Nutri-Score computed without it would be systematically wrong.
+2. **It is an official, regulated front-of-pack label** used by governments. Reproducing it from partial data would misrepresent an official mark — the same class of error as §2.6, but worse, because the label carries legal weight.
+3. **It measures nutrition only.** Our defects are about *processing* and about a ranking that contradicts its own display. Nutri-Score answers neither.
+
+### Decision on Q1
+
+**Patch our engine (§3). Do not adopt Nutri-Score now, and do not adopt NOVA** (we have it for only 36% of products, and 32% of products are `unknown`).
+
+A **nutrition-quality** signal is worth having eventually, but as its own clearly-named capability with its own spec — explicitly *not* called Nutri-Score, and only if we can source the missing inputs. Adding a half-Nutri-Score would import a second honesty problem instead of fixing the first.
+
+## 11. Outcome — implemented 2026-10-07
+
+Decisions taken (the user delegated Q2 and Q3; both are recorded here so they can be revisited cheaply — each is a label map or one line of ranking logic).
+
+### Decisions
+
+**Q2 — labels: option (b), generalised.** The badge states *the strongest claim the evidence supports*, chosen by `basis`:
+
+| tier | `off-nova` | `ingredient-heuristic` | `category-rule` |
+|---|---|---|---|
+| `whole` | Poco procesado | **Sin aditivos** | **Fresco** |
+| `processed` | Procesado | Con aditivos | — |
+| `ultra-processed` | Ultraprocesado | Muchos aditivos | — |
+| `unknown` | Sin datos | Sin datos | Sin datos |
+
+NOVA vocabulary is used **only when NOVA produced the tier**. `Sold as "Alimento entero"` is gone: it was a processing claim our additive scan had not earned. Rationale in `src/lib/tier-labels.ts`; the mapping is one table and trivially reversible.
+
+**Q3 — trade-offs: one disclosed macro regression, only to buy a processing improvement.** Shipped as two stricter rules than the spec originally proposed:
+
+1. **A processing regression always disqualifies.** The first implementation allowed a *tier* regression as a disclosed cost, and the audit immediately caught it (16 recommendations offering a product whose badge said *more processed*). "Processing outranks macros" has to mean processing never regresses.
+2. **Macros may be traded off at most one at a time**, and only when a processing reason justifies it — so macro-only swaps remain pure improvements.
+
+This narrowed `TradeOff.kind` to `protein | sugars | salt`, making the impossible tier/additive cases unrepresentable and deleting dead code.
+
+### Re-measured success criteria
+
+`node scripts/audit-alternatives.ts`, 4,330 products (food 3,007 / non-food 1,323):
+
+| # | Criterion | Before | After |
+|---|---|---|---|
+| 1 | Recommendations with a worse displayed tier | 85 | **0** ✅ |
+| 2+3 | An acceptable better-tier peer that is not offered | 397 | **0 of 1,043 achievable** ✅ |
+| 4 | Recommendations that improve the tier | 548 | **1,043** — equals the derived ceiling ✅ |
+| 5 | `unknown` used as an improvement | possible | **0** ✅ |
+| 6 | A heuristic tier presented as a whole-food claim | 473 products | **0** ✅ |
+
+Supporting detail: food with recommendations **1,510 → 1,846**; recommendations carrying a disclosed cost **1,103**; tier reasons emitted **2,279**; unchanged 1,073 products are correctly told nothing beats them.
+
+### Verification
+
+- 293 tests green, coverage 95.7% branches (recovered from a dip to 91.8% — the drop exposed the dead cost cases above).
+- Typecheck, lint, build, catalogue guard all clean.
+- Browser-verified: *Leche desnatada* no longer recommends the more-processed *+Proteínas* variant and now reads **"Sin aditivos"**; *Batido de chocolate Puleva* shows three alternatives, two with a visible **"A cambio: Más azúcar 9,5 g → 10 g"** cost and one pure improvement; *Plátano* reads **"Fresco"**; *Champú* shows no badge, no nutrition and no alternatives.
+
+### One caveat worth stating
+
+The ordering tests I added (`findSwaps — ordering`) passed on first run, which per the project's own TDD rule is a yellow flag: they characterise behaviour that already existed rather than driving it. They earn their place as regression protection for the tie-break order, but they did not prove anything new.
+
+## 12. Open questions
+
+**Q1 — Comparators (RESOLVED).** Answered in §10: patch our engine; do **not** adopt Nutri-Score (we lack the fruit/veg input, and reproducing an official regulated label from partial data would misrepresent it) and do **not** adopt NOVA (36% coverage, 32% `unknown`). A nutrition-quality signal is a separate future capability, explicitly not named Nutri-Score. **§3 stands.**
+
+**Q2 — Tier labels (RESOLVED, implemented).** Shipped as the basis-aware table in §11. The concern raised here was real and is handled: "Sin aditivos" cannot overclaim *processing* because it does not mention processing, and the basis line ("según ingredientes") says where it came from. **Open for revisit:** whether "Sin aditivos" should read "Pocos aditivos" (it is accurate even at zero, and slightly less absolute).
+
+**Q3 — Trade-off appetite (RESOLVED, implemented).** One disclosed **macro** regression only, and only to buy a processing improvement; processing regressions disqualify outright. See §11.
+
+**Q4 — Non-food.** Confirmed correct: no alternatives panel for the 1,323 non-food products, and the audit excludes them from its criteria so numbers stay comparable across runs. **No action.**
+
+**Q5 — Shelf widening.** Re-confirmed after v2: widening from leaf to shelf still adds **0** qualifying swaps. With the stricter processing rule the answer is now even more clear-cut — the limiting factor is data quality, not category breadth. **Closed.**
