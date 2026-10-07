@@ -27,6 +27,8 @@ Approved: 2026-10-06
 
 Module specs: [SPEC-catalog.md](./SPEC-catalog.md), [SPEC-nutrition.md](./SPEC-nutrition.md), [SPEC-cart.md](./SPEC-cart.md), [SPEC-swaps.md](./SPEC-swaps.md). This map is the index; filenames are not the index.
 
+> **Second initiative below.** Everything from "Platform" down to the end of the v1 "Open questions" describes the modules above. The **Trip order** initiative that follows is a later, separate addition, with its own modules and specs.
+
 ## Platform
 
 TypeScript + React + Vite, built as an installable PWA (`vite-plugin-pwa`). **No backend.** All data is baked in at build time; the app makes no runtime network requests other than product images.
@@ -173,3 +175,44 @@ Coverage: **≥ 90% lines for `src/lib/**`**, enforced as a Vitest threshold so 
 4. **ODbL attribution** — where does the Open Food Facts credit live so it satisfies share-alike without cluttering the aisle view?
 5. **Variable-weight products** (fresh produce priced per kg) — in swaps, or excluded because comparisons are ill-defined?
 6. **Refresh cadence** — the mirror updates weekly; does the enrichment re-run weekly too, or on demand?
+
+---
+
+# Initiative: Trip order
+
+Added 2026-10-07, branch `feature/store-map`. Idea: [docs/ideas/shopping-order.md](../../../docs/ideas/shopping-order.md).
+
+**Intent:** order a list the way the trip actually flows — grouping similar things together, keeping non-food apart, and letting the user correct the order — so the list reads as a walk instead of an alphabetical index.
+
+## Modules
+
+| Module id | Responsibility | Depends on |
+|---|---|---|
+| `zones` | The vocabulary: which zone each of the 26 sections belongs to, the Bebé food/non-food split, and the pure grouping function. Also fixes the cross-listing count bug, because "which section is this shelf in?" is the same data question | — |
+| `ordering` | The proposed sequence, the two editable layers (cluster order, within-cluster order), persistence, the always-visible mode chip, applied to the cart and the category browser | `zones` |
+
+**Build order:** `zones` → `ordering`
+
+Specs: [SPEC-zones.md](./SPEC-zones.md), [SPEC-ordering.md](./SPEC-ordering.md).
+
+## In scope, deliberately not a module
+
+The **search-cap bug** — the results heading reports `MAX_RESULTS = 50` (the truncation limit) as if it were the real total, so every broad query claims "50 resultados" whether 51 or 900 match. It is a defect repair with no new data and no dependency on either module, so it gets a regression test rather than a spec. Expected result: *"50 de 312 · Página 1"*.
+
+## Explicitly refused
+
+Recorded so these are not re-proposed. Full reasoning in the idea doc's "Not Doing" list.
+
+| Refused | Why |
+|---|---|
+| A floor-plan map | Makes the user translate a picture into an aisle; can be wrong in a costly way (wrong aisle label → wrong aisle); needs a planogram Mercadona does not publish |
+| Real-time in-store position | Needs beacons or GPS; GPS does not work indoors and a web app cannot pair with beacons |
+| Per-store layouts | No data exists, and layouts differ between store formats |
+| Distance-based route optimisation | We have no distances; it would be fiction dressed as precision |
+| A permanently reordered catalogue with no user control | An order the user cannot correct repeats the mistake the app already refuses to make elsewhere |
+
+## Open questions
+
+1. Is the proposed zone order right for the user's actual store? It is the one decision made by principle rather than evidence — see `SPEC-zones.md` §"The one conflict".
+2. Does `Mi orden` extend to the category browser's sections, or only to cart products?
+3. Should cluster headings appear in the cart, or does the mode chip carry enough state?
