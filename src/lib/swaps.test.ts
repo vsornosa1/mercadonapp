@@ -118,7 +118,7 @@ describe('compare', () => {
   });
 
   it('nova: a lower group is better', () => {
-    const lower = { ...base, novaGroup: 1 };
+    const lower: SwapSignals = { ...base, novaGroup: 1 };
     expect(compare(lower, base, 'nova')).toBe(-1);
     expect(compare(base, lower, 'nova')).toBe(1);
     expect(compare(base, base, 'nova')).toBe(0);
