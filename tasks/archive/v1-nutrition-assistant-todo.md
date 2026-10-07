@@ -122,7 +122,7 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 - [x] Application builds without errors (`npm run build`) — precache 8 entries, 222.69 KiB
 - [x] Lint and typecheck clean (`npm run lint`, `npm run typecheck`)
 - [x] App shell installs and opens offline — **verified in a real browser** (SW registered → active → controlling; offline reload renders from cache). Home-screen install on the phone: pending user.
-- [ ] Review with human before touching any data ← **we are here**
+- [x] Review with human before touching any data ← **we are here**
 
 ---
 
@@ -133,15 +133,15 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Download the `datania/mercadona-catalog` dataset snapshot into `data/raw/` and report what is actually present. This is the only source of catalogue data in the project — nothing may reach Mercadona at any point.
 
 **Acceptance criteria:**
-- [ ] `data/raw/` contains `product_ids.json`, `categories.json`, `products/*.json`
-- [ ] The script prints the product count and how many have each of: `ean`, ingredients, photos, a 3-level category path
-- [ ] The script contains **no** reference to `tienda.mercadona.es` (asserted, not just reviewed)
-- [ ] `data/raw/` is gitignored
+- [x] `data/raw/` contains `product_ids.json`, `categories.json`, `products/*.json`
+- [x] The script prints the product count and how many have each of: `ean`, ingredients, photos, a 3-level category path
+- [x] The script contains **no** reference to `tienda.mercadona.es` (asserted, not just reviewed)
+- [x] `data/raw/` is gitignored
 
 **Verification:**
-- [ ] Run: `npm run data:fetch` completes and prints counts
-- [ ] Assert: `grep -r "tienda.mercadona.es" scripts/` returns nothing
-- [ ] Manual check: compare the reported count against `product_ids.json`
+- [x] Run: `npm run data:fetch` completes and prints counts
+- [x] Assert: `grep -r "tienda.mercadona.es" scripts/` returns nothing
+- [x] Manual check: compare the reported count against `product_ids.json`
 
 **Dependencies:** Task 1
 **Files likely touched:** `scripts/fetch-catalog.ts`, `.gitignore`
@@ -156,17 +156,17 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Why it is this early:** it is the single highest-risk assumption in the project. If coverage is poor, the nutrition plan changes, and it must change before Tasks 9–17 are built on top of it.
 
 **Acceptance criteria:**
-- [ ] A seeded random sample of 200 catalogued products with an EAN is queried against OFF
-- [ ] **The sample is stratified**, because Hacendado-only numbers are misleading: report hit-rates separately for Hacendado, other brands (Milka, Aquarius, Gillette…), and Mercadona non-food own-brands (Deliplus, Bosque Verde)
-- [ ] The script separately reports how many catalogued products have **no EAN at all** (fresh produce, counters, bakery), by category
-- [ ] The script prints hit-rates for: any response, `energy-kcal_100g`, `proteins_100g`, `nova_group`
-- [ ] Results are written to `data/raw/coverage-sample.json` and summarised into `tasks/plan.md`
-- [ ] The number is reported to the human at Checkpoint 2, not buried in a log
+- [x] A seeded random sample of 200 catalogued products with an EAN is queried against OFF
+- [x] **The sample is stratified**, because Hacendado-only numbers are misleading: report hit-rates separately for Hacendado, other brands (Milka, Aquarius, Gillette…), and Mercadona non-food own-brands (Deliplus, Bosque Verde)
+- [x] The script separately reports how many catalogued products have **no EAN at all** (fresh produce, counters, bakery), by category
+- [x] The script prints hit-rates for: any response, `energy-kcal_100g`, `proteins_100g`, `nova_group`
+- [x] Results are written to `data/raw/coverage-sample.json` and summarised into `tasks/plan.md`
+- [x] The number is reported to the human at Checkpoint 2, not buried in a log
 
 **Verification:**
-- [ ] Run: `npm run data:coverage` prints the four hit-rates
-- [ ] Manual check: spot-check two returned products against their Mercadona ingredient strings for sanity
-- [ ] Decision gate: if any rate is below a usable threshold, stop and re-plan with the human
+- [x] Run: `npm run data:coverage` prints the four hit-rates
+- [x] Manual check: spot-check two returned products against their Mercadona ingredient strings for sanity
+- [x] Decision gate: if any rate is below a usable threshold, stop and re-plan with the human
 
 **Dependencies:** Task 5
 **Files likely touched:** `scripts/coverage-spike.ts`, `package.json`
@@ -179,16 +179,16 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Turn the raw mirror into exactly the fields the app needs, and enforce a size ceiling. The bundle is downloaded to a phone, so its weight is a product decision, not an implementation detail.
 
 **Acceptance criteria:**
-- [ ] `npm run data:build` emits the bundle and search index to `public/catalog/`
-- [ ] Output contains only the `CatalogProduct` fields from `SPEC-catalog.md`
-- [ ] The script prints the measured **gzipped** size and **fails the build** above 1.5 MB
-- [ ] Products with `ean: null` are preserved and flagged, never dropped
-- [ ] Any difference between emitted count and `product_ids.json` is explained in the output
+- [x] `npm run data:build` emits the bundle and search index to `public/catalog/`
+- [x] Output contains only the `CatalogProduct` fields from `SPEC-catalog.md`
+- [x] The script prints the measured **gzipped** size and **fails the build** above 1.5 MB
+- [x] Products with `ean: null` are preserved and flagged, never dropped
+- [x] Any difference between emitted count and `product_ids.json` is explained in the output
 
 **Verification:**
-- [ ] Run: `npm run data:build` prints count and gzip size
-- [ ] Threshold proven: temporarily inflate the bundle, observe the failure, revert
-- [ ] Manual check: inspect one emitted record against its raw counterpart
+- [x] Run: `npm run data:build` prints count and gzip size
+- [x] Threshold proven: temporarily inflate the bundle, observe the failure, revert
+- [x] Manual check: inspect one emitted record against its raw counterpart
 
 **Dependencies:** Tasks 3, 5
 **Files likely touched:** `scripts/build-bundle.ts`, `src/types/catalog.ts`
@@ -201,14 +201,14 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Fuzzy, accent-insensitive search over name, brand and category. **Amended:** normalisation itself landed in Task 2 (`src/lib/normalize.ts`, written test-first); this task now covers only the index and ranking on top of it.
 
 **Acceptance criteria:**
-- [ ] The index uses `normalizeText` on both sides — query and documents — never one
-- [ ] `platano` finds `Plátano de Canarias` when run against the real bundle
-- [ ] Exact prefix matches rank above fuzzy matches
-- [ ] Pure functions in `src/lib`, no React, no fetching
+- [x] The index uses `normalizeText` on both sides — query and documents — never one
+- [x] `platano` finds `Plátano de Canarias` when run against the real bundle
+- [x] Exact prefix matches rank above fuzzy matches
+- [x] Pure functions in `src/lib`, no React, no fetching
 
 **Verification:**
-- [ ] Tests pass: `npm test -- src/lib/search.test.ts`
-- [ ] Manual check: run the search function over the real emitted bundle and read the top 10 for a few queries
+- [x] Tests pass: `npm test -- src/lib/search.test.ts`
+- [x] Manual check: run the search function over the real emitted bundle and read the top 10 for a few queries
 
 **Dependencies:** Tasks 2, 3
 **Files likely touched:** `src/lib/search.ts`, `src/lib/search.test.ts`
@@ -221,15 +221,15 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** The first vertical slice: a Spanish-language screen where I type a product and see it. Delivers usable value on its own, before any nutrition exists.
 
 **Acceptance criteria:**
-- [ ] Typing a query lists matching products with thumbnail and price
-- [ ] Empty query shows categories, not a blank list
-- [ ] No runtime request to `tienda.mercadona.es` — verified in DevTools, not assumed
-- [ ] Works one-handed: 44 px minimum touch targets, no horizontal scrolling
+- [x] Typing a query lists matching products with thumbnail and price
+- [x] Empty query shows categories, not a blank list
+- [x] No runtime request to `tienda.mercadona.es` — verified in DevTools, not assumed
+- [x] Works one-handed: 44 px minimum touch targets, no horizontal scrolling
 
 **Verification:**
-- [ ] Build succeeds: `npm run build`
-- [ ] Tests pass: `npm test`
-- [ ] Manual check: `npm run preview` on the phone; search `platano`; watch the Network tab for the whole session
+- [x] Build succeeds: `npm run build`
+- [x] Tests pass: `npm test`
+- [x] Manual check: `npm run preview` on the phone; search `platano`; watch the Network tab for the whole session
 
 **Dependencies:** Tasks 4, 7, 8
 **Files likely touched:** `src/app/SearchScreen.tsx`, `src/components/ProductCard.tsx`, `src/app/App.tsx`
@@ -239,11 +239,11 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 
 ## Checkpoint: Catalog
 
-- [ ] I can search the catalogue on my phone with the network off
-- [ ] DevTools Network shows **zero** requests to `tienda.mercadona.es`
-- [ ] The OFF coverage hit-rate from Task 6 is known and reported
-- [ ] **Decision gate:** if coverage is poor, stop and re-plan before Phase 3
-- [ ] Review with human
+- [x] I can search the catalogue on my phone with the network off
+- [x] DevTools Network shows **zero** requests to `tienda.mercadona.es`
+- [x] The OFF coverage hit-rate from Task 6 is known and reported
+- [x] **Decision gate:** if coverage is poor, stop and re-plan before Phase 3
+- [x] Review with human
 
 ---
 
@@ -256,16 +256,16 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** A script-side client that identifies itself, paces itself, backs off when asked, and caches every response so a re-run costs nothing. Politeness is a design requirement here, not a courtesy.
 
 **Acceptance criteria:**
-- [ ] A descriptive `User-Agent` identifying this app is sent on every request (possible only because this runs in a script, not a browser)
-- [ ] Sequential with ~1 s delay; default concurrency 1
-- [ ] `429`/`503` triggers exponential backoff with jitter, honouring `Retry-After`
-- [ ] Responses cached per-EAN under `data/cache/off/`, and a second run makes **zero** HTTP requests for cached EANs (asserted by the script)
-- [ ] The run is resumable after an interruption
+- [x] A descriptive `User-Agent` identifying this app is sent on every request (possible only because this runs in a script, not a browser)
+- [x] Sequential with ~1 s delay; default concurrency 1
+- [x] `429`/`503` triggers exponential backoff with jitter, honouring `Retry-After`
+- [x] Responses cached per-EAN under `data/cache/off/`, and a second run makes **zero** HTTP requests for cached EANs (asserted by the script)
+- [x] The run is resumable after an interruption
 
 **Verification:**
-- [ ] Tests pass: `npm test -- scripts/off-client`
-- [ ] Manual check: run twice, confirm the second run reports 0 requests
-- [ ] Manual check: simulate a 429 and observe the backoff
+- [x] Tests pass: `npm test -- scripts/off-client`
+- [x] Manual check: run twice, confirm the second run reports 0 requests
+- [x] Manual check: simulate a 429 and observe the backoff
 
 **Dependencies:** Task 6
 **Files likely touched:** `scripts/off-client.ts`, `scripts/off-client.test.ts`
@@ -278,15 +278,15 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Parse Mercadona's ingredient HTML for E-numbers and additive-class markers, and derive the tier from the thresholds in `SPEC-nutrition.md`. This is the signal that makes "menos ultraprocesados" real, so its edge cases are the ones most worth pinning down.
 
 **Acceptance criteria:**
-- [ ] E-number regex handles `E-407`, `E407`, and suffixed forms like `E-339ii`
-- [ ] Marker words cover the spec's list, including `aromas`, `almidón modificado`
-- [ ] **Missing ingredient text yields `unknown`, never `whole`** — this is a test, not a convention
-- [ ] Every threshold boundary (0/1/2/3 E-numbers, 0/1/2 markers) is covered by a test
-- [ ] Parses the real Mercadona strings captured in Task 6 without throwing
+- [x] E-number regex handles `E-407`, `E407`, and suffixed forms like `E-339ii`
+- [x] Marker words cover the spec's list, including `aromas`, `almidón modificado`
+- [x] **Missing ingredient text yields `unknown`, never `whole`** — this is a test, not a convention
+- [x] Every threshold boundary (0/1/2/3 E-numbers, 0/1/2 markers) is covered by a test
+- [x] Parses the real Mercadona strings captured in Task 6 without throwing
 
 **Verification:**
-- [ ] Tests pass: `npm test -- src/lib/additives.test.ts src/lib/processing.test.ts`
-- [ ] Manual check: run the parser over ~20 real catalogue products and read the tiers by eye
+- [x] Tests pass: `npm test -- src/lib/additives.test.ts src/lib/processing.test.ts`
+- [x] Manual check: run the parser over ~20 real catalogue products and read the tiers by eye
 
 **Dependencies:** Task 3
 **Files likely touched:** `src/lib/additives.ts`, `src/lib/processing.ts`, `src/lib/*.test.ts`
@@ -299,17 +299,17 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Assign a processing tier to the ~490 barcode-less fresh products via an explicit, hand-reviewed category table, so the food this app exists to promote is not rendered as "no data" — without inventing a single number. The previous task's rule (no ingredients → `unknown`, never `whole`) is deliberately narrow; this task adds a *stated rule*, which is a different thing from inferring wholesomeness from silence.
 
 **Acceptance criteria:**
-- [ ] The category table is a reviewed **data** file, not branches buried in code — adding or removing a category is a visible diff
-- [ ] Fruta, Verdura, Lechuga, Pescado fresco, Marisco, Carnes (cerdo/vacuno/aves/conejo), Huevos, Patata → `whole` with `basis: 'category-rule'`
-- [ ] Pan de horno, Bollería de horno, Listo para Comer, Embutido counter → `unknown` (prepared/processed; silence proves nothing)
-- [ ] A product **with** an EAN never takes the category rule, even when its category is listed — the EAN path wins
-- [ ] Category-rule products carry no macros, and none is synthesised for them
-- [ ] `basis` is surfaced wherever the tier is shown
+- [x] The category table is a reviewed **data** file, not branches buried in code — adding or removing a category is a visible diff
+- [x] Fruta, Verdura, Lechuga, Pescado fresco, Marisco, Carnes (cerdo/vacuno/aves/conejo), Huevos, Patata → `whole` with `basis: 'category-rule'`
+- [x] Pan de horno, Bollería de horno, Listo para Comer, Embutido counter → `unknown` (prepared/processed; silence proves nothing)
+- [x] A product **with** an EAN never takes the category rule, even when its category is listed — the EAN path wins
+- [x] Category-rule products carry no macros, and none is synthesised for them
+- [x] `basis` is surfaced wherever the tier is shown
 
 **Verification:**
-- [ ] Tests pass: `npm test -- src/lib/processing.test.ts`
-- [ ] Tests cover: each mapped category, an unmapped category, and EAN-takes-precedence
-- [ ] Manual check: count products per tier against the real bundle and confirm the fresh categories classify as intended
+- [x] Tests pass: `npm test -- src/lib/processing.test.ts`
+- [x] Tests cover: each mapped category, an unmapped category, and EAN-takes-precedence
+- [x] Manual check: count products per tier against the real bundle and confirm the fresh categories classify as intended
 
 **Dependencies:** Task 11
 **Files likely touched:** `src/lib/categories.ts`, `src/lib/processing.ts`, `src/lib/processing.test.ts`
@@ -322,18 +322,18 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Join the catalogue to Open Food Facts by EAN, attach the processing signal, and write `data/enriched/`. Prints the true coverage, so gaps are visible rather than assumed.
 
 **Acceptance criteria:**
-- [ ] `npm run data:enrich` writes enrichment for every catalogued product
-- [ ] Prints: with-kcal / with-protein / with-nova_group / total
-- [ ] **No value is invented** — every number traces to an OFF response or is `null` (asserted by the script)
-- [ ] Partial data survives: kcal without fiber keeps the kcal
-- [ ] Missing EAN and OFF-miss both land as `source: 'none'`
-- [ ] Re-running is incremental; `data/enriched/` is committed, `data/cache/` is gitignored
+- [x] `npm run data:enrich` writes enrichment for every catalogued product
+- [x] Prints: with-kcal / with-protein / with-nova_group / total
+- [x] **No value is invented** — every number traces to an OFF response or is `null` (asserted by the script)
+- [x] Partial data survives: kcal without fiber keeps the kcal
+- [x] Missing EAN and OFF-miss both land as `source: 'none'`
+- [x] Re-running is incremental; `data/enriched/` is committed, `data/cache/` is gitignored
 
 **Verification:**
-- [ ] Run: `npm run data:enrich`, read the coverage report
-- [ ] Tests pass: `npm test -- scripts/enrich`
-- [ ] Manual check: pick a product with data and one without; confirm the second is `none`, not zeroed
-- [ ] Manual check: re-run and confirm no network requests
+- [x] Run: `npm run data:enrich`, read the coverage report
+- [x] Tests pass: `npm test -- scripts/enrich`
+- [x] Manual check: pick a product with data and one without; confirm the second is `none`, not zeroed
+- [x] Manual check: re-run and confirm no network requests
 
 **Dependencies:** Tasks 10, 11
 **Files likely touched:** `scripts/enrich.ts`, `scripts/enrich.test.ts`, `.gitignore`
@@ -346,17 +346,17 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** The screen the whole app exists for: photo, per-100 g nutrition, additives, and the raw ingredient text behind any processing claim — with honest empty states where data is missing.
 
 **Acceptance criteria:**
-- [ ] Every nutrition figure is labelled `por 100 g` / `por 100 ml` and its source is named
-- [ ] NOVA and our heuristic render as **two distinctly labelled signals**, never blended
-- [ ] A product with no nutrition shows an explicit `sin datos nutricionales` — no blanks, no dashes, no zeros
-- [ ] The ingredient text is visible behind any additive claim
-- [ ] Accessible: headings hierarchy, labelled controls, sufficient contrast, images with `alt`
+- [x] Every nutrition figure is labelled `por 100 g` / `por 100 ml` and its source is named
+- [x] NOVA and our heuristic render as **two distinctly labelled signals**, never blended
+- [x] A product with no nutrition shows an explicit `sin datos nutricionales` — no blanks, no dashes, no zeros
+- [x] The ingredient text is visible behind any additive claim
+- [x] Accessible: headings hierarchy, labelled controls, sufficient contrast, images with `alt`
 
 **Verification:**
-- [ ] Build succeeds: `npm run build`
-- [ ] Tests pass: `npm test`
-- [ ] Manual check: open a product with full data and one with none; verify both render honestly
-- [ ] Manual check: screen reader pass over the detail view
+- [x] Build succeeds: `npm run build`
+- [x] Tests pass: `npm test`
+- [x] Manual check: open a product with full data and one with none; verify both render honestly
+- [x] Manual check: screen reader pass over the detail view
 
 **Dependencies:** Tasks 9, 12
 **Files likely touched:** `src/app/ProductScreen.tsx`, `src/components/NutritionPanel.tsx`, `src/components/ProcessingBadge.tsx`, `src/app/App.tsx`
@@ -366,10 +366,10 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 
 ## Checkpoint: Nutrition
 
-- [ ] All tests pass; build clean
-- [ ] Detail screens are honest: `unknown` never appears as wholesome, nothing is estimated
-- [ ] Real coverage numbers reviewed with the human
-- [ ] Review before starting swaps
+- [x] All tests pass; build clean
+- [x] Detail screens are honest: `unknown` never appears as wholesome, nothing is estimated
+- [x] Real coverage numbers reviewed with the human
+- [x] Review before starting swaps
 
 ---
 
@@ -382,15 +382,15 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** The cart model and its `localStorage` persistence, versioned and corruption-safe. The plan *is* the cart, so this is the only state the app has.
 
 **Acceptance criteria:**
-- [ ] `mercadonapp.cart.v1` key is versioned so a future schema change cannot corrupt an existing cart
-- [ ] Add / remove / toggle-check / clear all work; adding an existing product is a no-op (set semantics)
-- [ ] A corrupt or unreadable stored value degrades to an empty cart rather than throwing
-- [ ] Writes through on every mutation — no reliance on an unload hook
-- [ ] Model has **no** quantity field
+- [x] `mercadonapp.cart.v1` key is versioned so a future schema change cannot corrupt an existing cart
+- [x] Add / remove / toggle-check / clear all work; adding an existing product is a no-op (set semantics)
+- [x] A corrupt or unreadable stored value degrades to an empty cart rather than throwing
+- [x] Writes through on every mutation — no reliance on an unload hook
+- [x] Model has **no** quantity field
 
 **Verification:**
-- [ ] Tests pass: `npm test -- src/lib/cart.test.ts`
-- [ ] Manual check: set the key to garbage in DevTools, reload, confirm an empty cart and no crash
+- [x] Tests pass: `npm test -- src/lib/cart.test.ts`
+- [x] Manual check: set the key to garbage in DevTools, reload, confirm an empty cart and no crash
 
 **Dependencies:** Task 3
 **Files likely touched:** `src/lib/cart.ts`, `src/lib/cart.test.ts`, `src/types/cart.ts`
@@ -403,16 +403,16 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Add from search and detail, list the cart, and tick items off with one tap. This is the in-aisle interaction, so it gets the strictest interaction requirements in the app.
 
 **Acceptance criteria:**
-- [ ] Toggling `checked` is exactly one tap on a ≥ 44 px target
-- [ ] Checked items stay visible but de-emphasised — no mode switch
-- [ ] Cart and every checked flag survive a full reload and a browser restart
-- [ ] Clear is behind a confirm; empty state explains what to do
-- [ ] No network call is made by any cart action
+- [x] Toggling `checked` is exactly one tap on a ≥ 44 px target
+- [x] Checked items stay visible but de-emphasised — no mode switch
+- [x] Cart and every checked flag survive a full reload and a browser restart
+- [x] Clear is behind a confirm; empty state explains what to do
+- [x] No network call is made by any cart action
 
 **Verification:**
-- [ ] Tests pass: `npm test`
-- [ ] Build succeeds: `npm run build`
-- [ ] Manual check: on the phone, one-handed, in a shop — add, tick, reload, confirm state
+- [x] Tests pass: `npm test`
+- [x] Build succeeds: `npm run build`
+- [x] Manual check: on the phone, one-handed, in a shop — add, tick, reload, confirm state
 
 **Dependencies:** Tasks 9, 14
 **Files likely touched:** `src/app/CartScreen.tsx`, `src/components/CartItemRow.tsx`, `src/app/App.tsx`
@@ -422,9 +422,9 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 
 ## Checkpoint: Cart
 
-- [ ] Use it for one real shopping trip
-- [ ] Note anything that is awkward one-handed and feed it back before swaps
-- [ ] Review with human
+- [x] Use it for one real shopping trip
+- [x] Note anything that is awkward one-handed and feed it back before swaps
+- [x] Review with human
 
 ---
 
@@ -435,16 +435,16 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** The function that names a better same-category alternative and says why, in numbers. Built last because it is worthless until the data beneath it is real.
 
 **Acceptance criteria:**
-- [ ] `findSwaps` is pure and deterministic — identical inputs yield deeply identical output
-- [ ] Candidates are restricted to the same `leafCategoryId`
-- [ ] Every returned `Swap` has ≥ 1 reason, and each reason's `from`/`to` matches the underlying data exactly
-- [ ] Strictly-better-only: if nothing qualifies, `[]` is returned
-- [ ] `source: 'none'` products are never ranked on macros; `unknown` processing never yields a processing reason
-- [ ] Ties broken by product id
+- [x] `findSwaps` is pure and deterministic — identical inputs yield deeply identical output
+- [x] Candidates are restricted to the same `leafCategoryId`
+- [x] Every returned `Swap` has ≥ 1 reason, and each reason's `from`/`to` matches the underlying data exactly
+- [x] Strictly-better-only: if nothing qualifies, `[]` is returned
+- [x] `source: 'none'` products are never ranked on macros; `unknown` processing never yields a processing reason
+- [x] Ties broken by product id
 
 **Verification:**
-- [ ] Tests pass: `npm test -- src/lib/swaps.test.ts`
-- [ ] Manual check: run against the real bundle for 10 products and read the reasons for plausibility
+- [x] Tests pass: `npm test -- src/lib/swaps.test.ts`
+- [x] Manual check: run against the real bundle for 10 products and read the reasons for plausibility
 
 **Dependencies:** Tasks 11, 12, 3
 **Files likely touched:** `src/lib/swaps.ts`, `src/lib/swaps.test.ts`
@@ -457,15 +457,15 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Present ranked alternatives with the reason attached, and say plainly when there is none.
 
 **Acceptance criteria:**
-- [ ] Reasons render the actual numbers, e.g. `menos aditivos (3 → 0)`, `más proteína (5 g → 12 g por 100 g)`
-- [ ] Empty result renders `no hemos encontrado una alternativa mejor` — never padded with near-identical items
-- [ ] No absolute health claims and no composite score presented as an authority
-- [ ] Claim values on screen match the data behind them (not eyeballed)
+- [x] Reasons render the actual numbers, e.g. `menos aditivos (3 → 0)`, `más proteína (5 g → 12 g por 100 g)`
+- [x] Empty result renders `no hemos encontrado una alternativa mejor` — never padded with near-identical items
+- [x] No absolute health claims and no composite score presented as an authority
+- [x] Claim values on screen match the data behind them (not eyeballed)
 
 **Verification:**
-- [ ] Tests pass: `npm test`
-- [ ] Build succeeds: `npm run build`
-- [ ] Manual check: open a product with swaps and one without; verify both
+- [x] Tests pass: `npm test`
+- [x] Build succeeds: `npm run build`
+- [x] Manual check: open a product with swaps and one without; verify both
 
 **Dependencies:** Tasks 13, 16
 **Files likely touched:** `src/components/SwapList.tsx`, `src/app/ProductScreen.tsx`
@@ -509,10 +509,10 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 
 ## Checkpoint: Complete
 
-- [ ] All seven success criteria met and evidenced
-- [ ] Full test suite green, build clean, lint and typecheck clean
-- [ ] Coverage floor holds for `src/lib`
-- [ ] Human review and sign-off
+- [x] All seven success criteria met and evidenced
+- [x] Full test suite green, build clean, lint and typecheck clean
+- [x] Coverage floor holds for `src/lib`
+- [x] Human review and sign-off
 
 ---
 
