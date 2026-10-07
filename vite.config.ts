@@ -13,7 +13,8 @@ export default defineConfig({
       includeAssets: ['manifest.webmanifest'],
       workbox: {
         navigateFallback: 'index.html',
-        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest,json}'],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
       },
     }),
   ],
