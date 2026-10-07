@@ -1,5 +1,6 @@
 import type { CatalogProduct } from '../types/catalog.ts';
 import type { CartItem } from '../types/cart.ts';
+import { ProductThumb } from './ProductThumb.tsx';
 
 interface CartItemRowProps {
   item: CartItem;
@@ -20,7 +21,7 @@ export function CartItemRow({ item, product, onToggle, onRemove }: CartItemRowPr
       >
         <span className="cart-item__checkbox" aria-hidden="true" />
       </button>
-      <img className="cart-item__thumb" src={product.thumbnail} alt="" loading="lazy" />
+      <ProductThumb className="cart-item__thumb" src={product.thumbnail} size={44} />
       <span className="cart-item__name">{product.name}</span>
       <button
         type="button"

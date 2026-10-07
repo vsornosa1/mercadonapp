@@ -88,9 +88,11 @@ describe('SwapList — disclosed cost', () => {
     expect(screen.getByText('12 g → 14 g')).toBeInTheDocument();
   });
 
-  it('renders no cost element when there is nothing to give up', () => {
-    render(<SwapList result={{ kind: 'available', swaps }} onSelect={vi.fn()} />);
-    expect(document.querySelector('.swap-item__cost')).toBeNull();
+  it('renders no cost note when there is nothing to give up', () => {
+    const { container } = render(
+      <SwapList result={{ kind: 'available', swaps }} onSelect={vi.fn()} />,
+    );
+    expect(container.querySelector('.costs')).toBeNull();
   });
 
   it('includes the cost in the accessible name, so it is not a visual-only caveat', () => {

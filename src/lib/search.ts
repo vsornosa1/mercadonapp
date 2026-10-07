@@ -6,14 +6,13 @@ import { normalizeText } from './normalize.ts';
 // Meets the acceptance criteria (accent-insensitive, prefix-over-fuzzy) without
 // a fuzzy-search dependency; see the Fuse.js deviation note in the plan.
 
-const MAX_RESULTS = 50;
 /** A pasted paragraph must not turn into dozens of full-catalogue scans. */
 const MAX_TOKENS = 8;
 
 type Field = 'name' | 'brand' | 'category';
 
-interface Scored {
-  product: CatalogProduct;
+interface Scored<T extends CatalogProduct> {
+  product: T;
   score: number;
 }
 
@@ -62,15 +61,21 @@ function rankToken(token: string, product: CatalogProduct): number | null {
  * product (name, brand or category), so "natillas proteina" finds
  * "Natillas sabor vainilla +Proteínas 12 g" instead of nothing. Requiring all
  * words is what makes a partial phrase a miss rather than a weak hit.
+ *
+ * Returns *all* matches, ranked. Callers paginate, so truncating here would
+ * both hide products and make the "N resultados" heading wrong.
  */
-export function search(query: string, products: readonly CatalogProduct[]): CatalogProduct[] {
+export function search<T extends CatalogProduct>(
+  query: string,
+  products: readonly T[],
+): T[] {
   const tokens = normalizeText(query)
     .split(' ')
     .filter((token) => token !== '')
     .slice(0, MAX_TOKENS);
   if (tokens.length === 0) return [];
 
-  const scored: Scored[] = [];
+  const scored: Scored<T>[] = [];
   for (const product of products) {
     let total = 0;
     let matchedEveryToken = true;
@@ -86,5 +91,5 @@ export function search(query: string, products: readonly CatalogProduct[]): Cata
   }
 
   scored.sort((a, b) => a.score - b.score || a.product.name.localeCompare(b.product.name, 'es'));
-  return scored.slice(0, MAX_RESULTS).map((s) => s.product);
+  return scored.map((s) => s.product);
 }

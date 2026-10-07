@@ -8,3 +8,7 @@ afterEach(() => {
   cleanup();
 });
 
+// jsdom implements no layout, so scrolling is a no-op the app would otherwise
+// trip over every time it moves focus to a new view.
+window.scrollTo = () => {};
+

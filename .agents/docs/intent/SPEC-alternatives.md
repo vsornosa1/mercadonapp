@@ -122,6 +122,28 @@ The tier label must describe what is measured. Proposed:
 
 The label varies with `basis` so a heuristic never borrows NOVA's authority. *(Open question Q2 — see below.)*
 
+### 3.7 Two panels, ordered rather than merged
+
+A product page shows two lists, and the order is the point:
+
+1. **Alternativas mejores** — the evidence-gated panel this spec governs. It
+   answers "can I do better?", so it comes first.
+2. **Similares** — `findSimilar()`: same leaf category, then same shelf, ranked by
+   price proximity with a total and stable order. It answers "what else is here?"
+
+Similares is deliberately **not** a nutrition judgement, which is why:
+
+- it renders for non-food, where the alternatives panel is withheld because
+  health advice on shampoo is noise;
+- it is the only thing offered for a product we compared and found nothing better
+  for — the state that previously showed an explanation and no way forward;
+- it never repeats a product already offered as a better alternative
+  (`excludeIds`), so the two panels cannot contradict one another.
+
+The boundary this keeps: adding a panel must not weaken the one that makes
+claims. Similares is capped and runs after the alternatives, so it cannot crowd
+out or truncate them.
+
 ## 4. Commands
 
 ```
@@ -186,11 +208,14 @@ Vitest, colocated. The revised ranking is pure logic, so it carries the weight:
 - Never present a heuristic tier under a NOVA-sounding label.
 - Show a trade-off with the same weight as the benefit, or do not offer the swap.
 - Keep the audit script runnable — its numbers are the evidence for this spec.
+- Keep a non-judgemental panel (similares) free of any claim a judgemental one
+  would need evidence for.
 
 **Ask first**
 - Introducing a standard nutrient-profiling score (Nutri-Score, NOVA proper) — licence and semantics change.
 - Changing the additive-marker list or the category rule.
 - Any change that makes a recommendation cross a leaf category.
+- Letting a panel that makes claims and one that does not share a heading.
 
 **Never**
 - Treat `unknown` as better or worse than a known tier.

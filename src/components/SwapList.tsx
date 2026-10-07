@@ -4,6 +4,7 @@ import { formatPrice } from '../lib/format.ts';
 import { pluralise } from '../lib/plural.ts';
 import type { Swap } from '../types/swaps.ts';
 import { BenefitChips } from './BenefitChips.tsx';
+import { ProductThumb } from './ProductThumb.tsx';
 
 interface SwapListProps {
   result: AlternativesResult;
@@ -72,24 +73,24 @@ export function SwapList({ result, onSelect }: SwapListProps) {
       <h2 id="alternativas-title" className="panel__title">
         Alternativas mejores
       </h2>
-      <ul className="swap-list" role="list">
+      <ul className="suggestion-list" role="list">
         {result.swaps.map((swap) => (
           <li key={swap.product.id}>
             <button
               type="button"
-              className="swap-item"
+              className="suggestion-item"
               onClick={() => onSelect(swap)}
               aria-label={accessibleName(swap)}
             >
-              <img className="swap-item__thumb" src={swap.product.thumbnail} alt="" loading="lazy" />
-              <span className="swap-item__body">
-                <span className="swap-item__name">{swap.product.name}</span>
+              <ProductThumb className="suggestion-item__thumb" src={swap.product.thumbnail} size={56} />
+              <span className="suggestion-item__body">
+                <span className="suggestion-item__name">{swap.product.name}</span>
                 <BenefitChips reasons={swap.reasons} />
                 <CostNote swap={swap} />
               </span>
-              <span className="swap-item__aside">
-                <span className="swap-item__price">{formatPrice(swap.product.unitPrice)}</span>
-                <span className="swap-item__chevron" aria-hidden="true">
+              <span className="suggestion-item__aside">
+                <span className="suggestion-item__price">{formatPrice(swap.product.unitPrice)}</span>
+                <span className="suggestion-item__chevron" aria-hidden="true">
                   ›
                 </span>
               </span>

@@ -59,6 +59,43 @@ export interface Crumb {
   onClick?: () => void;
 }
 
+/**
+ * The section list as a column beside the content, for a window with room.
+ *
+ * A phone drills: sections, then shelves, then products, one screen at a time.
+ * A window can hold the sections and the shelves at once, so it shows both and
+ * the section list stops being a step you have to take.
+ */
+export function SectionRail({
+  sections,
+  selectedId,
+  onSelect,
+}: {
+  sections: CategorySection[];
+  selectedId: number | null;
+  onSelect: (id: number) => void;
+}) {
+  return (
+    <nav className="section-rail" aria-label="Secciones del supermercado">
+      <ul className="section-rail__list" role="list">
+        {sections.map((section) => (
+          <li key={section.id}>
+            <button
+              type="button"
+              className="section-rail__item"
+              aria-current={section.id === selectedId ? 'true' : undefined}
+              onClick={() => onSelect(section.id)}
+            >
+              <span className="section-rail__name">{section.name}</span>
+              <span className="section-rail__count">{section.count}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 /** Shows where the user is in the drill-down, and lets them step back up. */
 export function Breadcrumb({ crumbs }: { crumbs: Crumb[] }) {
   return (

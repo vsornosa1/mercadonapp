@@ -32,6 +32,17 @@ const products: CatalogProduct[] = [
 ];
 
 describe('search', () => {
+  it('returns every match instead of a truncated sample', () => {
+    // The screen paginates, so a cap here only hides results and makes the
+    // "N resultados" heading a lie.
+    const many: CatalogProduct[] = Array.from({ length: 137 }, (_, i) => ({
+      ...base,
+      id: i + 1,
+      name: `Leche número ${i + 1}`,
+    }));
+    expect(search('leche', many)).toHaveLength(137);
+  });
+
   it('finds Plátano from a query typed without the accent', () => {
     expect(search('platano', products).map((p) => p.id)).toContain(1);
   });
