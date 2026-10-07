@@ -18,7 +18,7 @@ type Dimension = 'additives' | 'nova' | 'protein' | 'sugars' | 'salt';
 
 // Returns -1 if `a` is better on this dimension, +1 if worse, 0 if equal,
 // null if the dimension is not comparable (missing data on either side).
-function compare(a: SwapSignals, b: SwapSignals, dimension: Dimension): -1 | 0 | 1 | null {
+export function compare(a: SwapSignals, b: SwapSignals, dimension: Dimension): -1 | 0 | 1 | null {
   switch (dimension) {
     case 'additives': {
       if (a.additiveCount == null || b.additiveCount == null) return null;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { CatalogProduct } from '../types/catalog.ts';
-import { findSwaps, type SwapSignals } from './swaps.ts';
+import { compare, findSwaps, type SwapSignals } from './swaps.ts';
 
 function product(id: number, leafCategoryId: number): CatalogProduct {
   return {
@@ -40,9 +40,20 @@ const signals = new Map<number, SwapSignals>([
   [3, { additiveCount: 3, additiveCodes: ['407'], novaGroup: 4, protein: 3, sugars: 20, salt: 0.3 }],
   [4, { additiveCount: 5, additiveCodes: ['407', '460', '466', '330', '621'], novaGroup: 4, protein: 2, sugars: 15, salt: 0.4 }],
   [5, { additiveCount: null, additiveCodes: [], novaGroup: null, protein: null, sugars: null, salt: null }],
+  [7, { additiveCount: 1, additiveCodes: ['330'], novaGroup: 3, protein: 5, sugars: 8, salt: 0.15 }],
+  [8, { additiveCount: 1, additiveCodes: ['330'], novaGroup: 3, protein: 5, sugars: 8, salt: 0.15 }],
 ]);
 
-const catalog = [product(1, 10), product(2, 10), product(3, 10), product(4, 10), product(5, 10), product(6, 99)];
+const catalog = [
+  product(1, 10),
+  product(2, 10),
+  product(3, 10),
+  product(4, 10),
+  product(5, 10),
+  product(6, 99),
+  product(7, 10),
+  product(8, 10),
+];
 
 describe('findSwaps', () => {
   it('returns strictly-better same-category alternatives with reasons', () => {
@@ -88,5 +99,58 @@ describe('findSwaps', () => {
 
   it('respects the limit', () => {
     expect(findSwaps(product(1, 10), catalog, signals, 1)).toHaveLength(1);
+  });
+
+  it('ranks by preference order, additives first, breaking ties by id', () => {
+    // 2 has 0 additives; 7 and 8 are identical and tie-broken by ascending id.
+    expect(findSwaps(product(1, 10), catalog, signals).map((s) => s.product.id)).toEqual([2, 7, 8]);
+  });
+});
+
+describe('compare', () => {
+  const base = yogurt(); // additives 3, nova 4, protein 3, sugars 12, salt 0.2
+
+  it('additives: fewer is better, more is worse, equal is equal', () => {
+    const fewer = { ...base, additiveCount: 0 };
+    expect(compare(fewer, base, 'additives')).toBe(-1);
+    expect(compare(base, fewer, 'additives')).toBe(1);
+    expect(compare(base, base, 'additives')).toBe(0);
+  });
+
+  it('nova: a lower group is better', () => {
+    const lower = { ...base, novaGroup: 1 };
+    expect(compare(lower, base, 'nova')).toBe(-1);
+    expect(compare(base, lower, 'nova')).toBe(1);
+    expect(compare(base, base, 'nova')).toBe(0);
+  });
+
+  it('protein: more is better (inverted direction)', () => {
+    const more = { ...base, protein: 9 };
+    expect(compare(more, base, 'protein')).toBe(-1);
+    expect(compare(base, more, 'protein')).toBe(1);
+    expect(compare(base, base, 'protein')).toBe(0);
+  });
+
+  it('sugars: less is better', () => {
+    const less = { ...base, sugars: 4 };
+    expect(compare(less, base, 'sugars')).toBe(-1);
+    expect(compare(base, less, 'sugars')).toBe(1);
+    expect(compare(base, base, 'sugars')).toBe(0);
+  });
+
+  it('salt: less is better', () => {
+    const less = { ...base, salt: 0.1 };
+    expect(compare(less, base, 'salt')).toBe(-1);
+    expect(compare(base, less, 'salt')).toBe(1);
+    expect(compare(base, base, 'salt')).toBe(0);
+  });
+
+  it('returns null when either side lacks the dimension', () => {
+    const noAdditives = { ...base, additiveCount: null };
+    expect(compare(noAdditives, base, 'additives')).toBeNull();
+    expect(compare(base, noAdditives, 'additives')).toBeNull();
+    const noProtein = { ...base, protein: null };
+    expect(compare(noProtein, base, 'protein')).toBeNull();
+    expect(compare(base, noProtein, 'protein')).toBeNull();
   });
 });
