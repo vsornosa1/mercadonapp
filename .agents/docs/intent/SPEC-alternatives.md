@@ -300,6 +300,18 @@ This narrowed `TradeOff.kind` to `protein | sugars | salt`, making the impossibl
 
 Supporting detail: food with recommendations **1,510 → 1,846**; recommendations carrying a disclosed cost **1,103**; tier reasons emitted **2,279**; unchanged 1,073 products are correctly told nothing beats them.
 
+### The remaining gap: ultra-processed products with no alternative
+
+Of the ultra-processed products, **1,253 now get an alternative and 323 do not (20%)**. That residual is not engine failure — it breaks down as:
+
+| Cause | Count | Is it correct? |
+|---|---|---|
+| **Every peer in the aisle is also ultra-processed** | **267 (83%)** | Yes. There is no less-processed option *in that aisle* — e.g. ready-to-drink coffee and chocolate milkshakes are uniformly NOVA 4. The app correctly says it compared and found nothing better. |
+| A less-processed peer exists but had **>1 macro regression** | 53 | Policy decision (see Q3): two regressions is a different product, not a trade-off. **Open to revisit** — this is the one bucket where a stricter reading costs the user a recommendation. |
+| No comparable peer at all | 3 | Data gap. |
+
+The dominant cause is a **product-aisle problem, not a code problem**: for those 267 products the honest answer really is "nothing here is better", and the app says exactly that. It also suggests a future feature worth its own spec: telling the user *"this whole category is ultra-processed — consider a different aisle"* rather than comparing within it.
+
 ### Verification
 
 - 293 tests green, coverage 95.7% branches (recovered from a dip to 91.8% — the drop exposed the dead cost cases above).
