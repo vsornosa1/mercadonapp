@@ -36,7 +36,7 @@ export function isInCart(cart: Cart, productId: number): boolean {
   return cart.items.some((item) => item.productId === productId);
 }
 
-interface StorageLike {
+export interface StorageLike {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
 }

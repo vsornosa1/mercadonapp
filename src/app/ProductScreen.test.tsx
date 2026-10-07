@@ -27,6 +27,20 @@ const base: EnrichedCatalogProduct = {
   processing: { basis: 'ingredient-heuristic', tier: 'unknown', additiveMarkers: [] },
 };
 
+function renderScreen(product: EnrichedCatalogProduct, overrides: Partial<{ added: boolean }> = {}) {
+  const onBack = vi.fn();
+  const onAdd = vi.fn();
+  render(
+    <ProductScreen
+      product={product}
+      onBack={onBack}
+      onAdd={onAdd}
+      added={overrides.added ?? false}
+    />,
+  );
+  return { onBack, onAdd };
+}
+
 describe('ProductScreen', () => {
   it('renders name, badge, nutrition and ingredients', () => {
     const product: EnrichedCatalogProduct = {
@@ -54,7 +68,7 @@ describe('ProductScreen', () => {
       processing: { basis: 'off-nova', tier: 'ultra-processed', additiveMarkers: [] },
     };
 
-    render(<ProductScreen product={product} onBack={vi.fn()} />);
+    renderScreen(product);
 
     expect(screen.getByRole('heading', { name: 'Chocolate con leche' })).toBeInTheDocument();
     expect(screen.getByText('Ultraprocesado')).toBeInTheDocument();
@@ -65,30 +79,34 @@ describe('ProductScreen', () => {
   });
 
   it('shows "sin datos nutricionales" when no nutrition data exists', () => {
-    render(<ProductScreen product={{ ...base, name: 'Manzana Golden' }} onBack={vi.fn()} />);
+    renderScreen({ ...base, name: 'Manzana Golden' });
     expect(screen.getByText('Sin datos nutricionales.')).toBeInTheDocument();
   });
 
   it('labels a category-rule whole food distinctly', () => {
-    render(
-      <ProductScreen
-        product={{
-          ...base,
-          name: 'Plátano',
-          processing: { basis: 'category-rule', tier: 'whole', additiveMarkers: [] },
-        }}
-        onBack={vi.fn()}
-      />,
-    );
+    renderScreen({
+      ...base,
+      name: 'Plátano',
+      processing: { basis: 'category-rule', tier: 'whole', additiveMarkers: [] },
+    });
     expect(screen.getByText('Alimento entero')).toBeInTheDocument();
     expect(screen.getByText('Clasificación por categoría')).toBeInTheDocument();
   });
 
   it('calls onBack when the back button is tapped', async () => {
     const user = userEvent.setup();
-    const onBack = vi.fn();
-    render(<ProductScreen product={base} onBack={onBack} />);
+    const { onBack } = renderScreen(base);
     await user.click(screen.getByRole('button', { name: /Volver/ }));
     expect(onBack).toHaveBeenCalled();
+  });
+
+  it('calls onAdd, and disables the button once added', async () => {
+    const user = userEvent.setup();
+    const { onAdd } = renderScreen(base);
+    await user.click(screen.getByRole('button', { name: 'Añadir a la lista' }));
+    expect(onAdd).toHaveBeenCalled();
+
+    renderScreen(base, { added: true });
+    expect(screen.getByRole('button', { name: 'En la lista ✓' })).toBeDisabled();
   });
 });

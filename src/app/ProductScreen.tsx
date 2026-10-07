@@ -7,9 +7,11 @@ import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 interface ProductScreenProps {
   product: EnrichedCatalogProduct;
   onBack: () => void;
+  onAdd: () => void;
+  added: boolean;
 }
 
-export function ProductScreen({ product, onBack }: ProductScreenProps) {
+export function ProductScreen({ product, onBack, onAdd, added }: ProductScreenProps) {
   const ingredients = product.ingredientsHtml ? stripHtml(product.ingredientsHtml) : null;
 
   return (
@@ -27,6 +29,9 @@ export function ProductScreen({ product, onBack }: ProductScreenProps) {
             {formatPrice(product.unitPrice)}
             {product.unitSize ? <span className="muted"> · {product.unitSize}</span> : null}
           </p>
+          <button type="button" className="add-button" onClick={onAdd} disabled={added}>
+            {added ? 'En la lista ✓' : 'Añadir a la lista'}
+          </button>
         </div>
       </div>
 
