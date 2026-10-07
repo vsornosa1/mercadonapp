@@ -111,6 +111,8 @@ The research proxy (`brands_tags=hacendado` → ~10,918 products, 100/100 macro 
 
 **Decision gate (Checkpoint 2):** OFF coverage is poor for macros (~a quarter to a third of packaged products, zero fresh). The plan said to stop and re-decide before Phase 3. The architecture already has the fallback (category rule + generic table for fresh), but the user should choose how to weight macros vs. the additive signal in the UI given this measured reality.
 
+**Decision (2026-10-06):** proceed, reframed. The additive/processing signal (64% via Mercadona ingredients) is the headline feature; macros appear where OFF has them (~25–35% packaged); fresh gets the category rule; "sin datos nutricionales" everywhere else. The generic composition table (Task 19) stays a follow-on.
+
 **Also measured:** the mirror's `product_ids.json` lists two ids (`24565`, `24585`) with no product file — they 404 on the mirror but still appear in the category tree. Task 5 tolerates them; 4,330/4,332 products landed.
 
 ## Risks and Mitigations
