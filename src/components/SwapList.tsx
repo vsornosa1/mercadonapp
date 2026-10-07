@@ -1,45 +1,72 @@
-import type { Swap } from '../types/swaps.ts';
+import type { AlternativesResult } from '../lib/alternatives.ts';
 import { formatPrice, formatReason } from '../lib/format.ts';
+import type { Swap } from '../types/swaps.ts';
+import { BenefitChips } from './BenefitChips.tsx';
 
-export function SwapList({ swaps }: { swaps: Swap[] }) {
-  if (swaps.length === 0) {
+interface SwapListProps {
+  result: AlternativesResult;
+  onSelect: (swap: Swap) => void;
+}
+
+export function SwapList({ result, onSelect }: SwapListProps) {
+  // Non-food gets no panel at all: "healthier alternatives" for shampoo is noise.
+  if (result.kind === 'non-food') return null;
+
+  if (result.kind === 'no-data') {
     return (
-      <section className="panel" aria-labelledby="swaps-title">
-        <h2 id="swaps-title" className="panel__title">
+      <section className="panel" aria-labelledby="alternativas-title">
+        <h2 id="alternativas-title" className="panel__title">
           Alternativas
         </h2>
         <p className="muted" role="status">
-          No hemos encontrado una alternativa mejor.
+          No hay datos suficientes para compararlo con otros productos de su categoría.
+        </p>
+      </section>
+    );
+  }
+
+  if (result.kind === 'none-better') {
+    return (
+      <section className="panel" aria-labelledby="alternativas-title">
+        <h2 id="alternativas-title" className="panel__title">
+          Alternativas
+        </h2>
+        <p className="muted" role="status">
+          Lo hemos comparado con {result.comparedCount}{' '}
+          {result.comparedCount === 1 ? 'producto' : 'productos'} de su categoría y ninguno es mejor.
         </p>
       </section>
     );
   }
 
   return (
-    <section className="panel" aria-labelledby="swaps-title">
-      <h2 id="swaps-title" className="panel__title">
+    <section className="panel" aria-labelledby="alternativas-title">
+      <h2 id="alternativas-title" className="panel__title">
         Alternativas mejores
       </h2>
       <ul className="swap-list" role="list">
-        {swaps.map((swap) => (
-          <li key={swap.product.id} className="swap-item">
-            <img
-              className="swap-item__thumb"
-              src={swap.product.thumbnail}
-              alt=""
-              loading="lazy"
-            />
-            <div className="swap-item__body">
-              <span className="swap-item__name">{swap.product.name}</span>
-              <ul className="swap-item__reasons" role="list">
-                {swap.reasons.map((reason) => (
-                  <li key={reason.kind} className="swap-item__reason">
-                    {formatReason(reason)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <span className="swap-item__price">{formatPrice(swap.product.unitPrice)}</span>
+        {result.swaps.map((swap) => (
+          <li key={swap.product.id}>
+            <button
+              type="button"
+              className="swap-item"
+              onClick={() => onSelect(swap)}
+              aria-label={`Ver ${swap.product.name}. Mejor: ${swap.reasons
+                .map(formatReason)
+                .join('; ')}`}
+            >
+              <img className="swap-item__thumb" src={swap.product.thumbnail} alt="" loading="lazy" />
+              <span className="swap-item__body">
+                <span className="swap-item__name">{swap.product.name}</span>
+                <BenefitChips reasons={swap.reasons} />
+              </span>
+              <span className="swap-item__aside">
+                <span className="swap-item__price">{formatPrice(swap.product.unitPrice)}</span>
+                <span className="swap-item__chevron" aria-hidden="true">
+                  ›
+                </span>
+              </span>
+            </button>
           </li>
         ))}
       </ul>

@@ -2,30 +2,62 @@ import { useMemo } from 'react';
 
 import { NutritionPanel } from '../components/NutritionPanel.tsx';
 import { ProcessingBadge } from '../components/ProcessingBadge.tsx';
+import { RecommendationBanner } from '../components/RecommendationBanner.tsx';
 import { SwapList } from '../components/SwapList.tsx';
+import { evaluateAlternatives, isFoodProduct } from '../lib/alternatives.ts';
 import { formatPrice } from '../lib/format.ts';
 import { stripHtml } from '../lib/html.ts';
-import { findSwaps, type SwapSignals } from '../lib/swaps.ts';
+import type { SwapSignals } from '../lib/swaps.ts';
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
+import type { Reason, Swap } from '../types/swaps.ts';
+
+export interface RecommendationContext {
+  fromName: string;
+  reasons: Reason[];
+  onBackToOrigin: () => void;
+}
 
 interface ProductScreenProps {
   product: EnrichedCatalogProduct;
   catalog: EnrichedCatalogProduct[];
   signals: Map<number, SwapSignals>;
+  recommendation?: RecommendationContext;
   onBack: () => void;
   onAdd: () => void;
   added: boolean;
+  onSelectSwap: (swap: Swap) => void;
 }
 
-export function ProductScreen({ product, catalog, signals, onBack, onAdd, added }: ProductScreenProps) {
+export function ProductScreen({
+  product,
+  catalog,
+  signals,
+  recommendation,
+  onBack,
+  onAdd,
+  added,
+  onSelectSwap,
+}: ProductScreenProps) {
   const ingredients = product.ingredientsHtml ? stripHtml(product.ingredientsHtml) : null;
-  const swaps = useMemo(() => findSwaps(product, catalog, signals, 3), [product, catalog, signals]);
+  const isFood = isFoodProduct(product.categoryPath);
+  const alternatives = useMemo(
+    () => evaluateAlternatives(product, catalog, signals, 3),
+    [product, catalog, signals],
+  );
 
   return (
     <section aria-label={product.name}>
       <button type="button" className="back-button" onClick={onBack}>
         ← Volver
       </button>
+
+      {recommendation ? (
+        <RecommendationBanner
+          fromName={recommendation.fromName}
+          reasons={recommendation.reasons}
+          onBack={recommendation.onBackToOrigin}
+        />
+      ) : null}
 
       <div className="product-detail">
         <img className="product-detail__photo" src={product.photo} alt={product.name} />
@@ -42,8 +74,8 @@ export function ProductScreen({ product, catalog, signals, onBack, onAdd, added 
         </div>
       </div>
 
-      <ProcessingBadge signal={product.processing} />
-      <NutritionPanel nutrition={product.nutrition} />
+      {isFood ? <ProcessingBadge signal={product.processing} /> : null}
+      {isFood ? <NutritionPanel nutrition={product.nutrition} /> : null}
 
       {ingredients ? (
         <section className="panel" aria-labelledby="ingredients-title">
@@ -54,7 +86,7 @@ export function ProductScreen({ product, catalog, signals, onBack, onAdd, added 
         </section>
       ) : null}
 
-      <SwapList swaps={swaps} />
+      <SwapList result={alternatives} onSelect={onSelectSwap} />
     </section>
   );
 }

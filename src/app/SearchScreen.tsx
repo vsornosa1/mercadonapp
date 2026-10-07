@@ -1,10 +1,16 @@
 import { useMemo, useState } from 'react';
 
+import { Breadcrumb, SectionGrid, ShelfList } from '../components/CategoryBrowser.tsx';
+import { Pager } from '../components/Pager.tsx';
 import { ProductRow } from '../components/ProductRow.tsx';
 import { SearchBar } from '../components/SearchBar.tsx';
+import { buildCategoryTree } from '../lib/category-tree.ts';
+import { paginate } from '../lib/pagination.ts';
 import { search } from '../lib/search.ts';
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 import type { CatalogStatus } from './useCatalog.ts';
+
+const PAGE_SIZE = 20;
 
 interface SearchScreenProps {
   products: EnrichedCatalogProduct[];
@@ -14,65 +20,128 @@ interface SearchScreenProps {
 
 export function SearchScreen({ products, status, onSelectProduct }: SearchScreenProps) {
   const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [sectionId, setSectionId] = useState<number | null>(null);
+  const [shelfId, setShelfId] = useState<number | null>(null);
 
-  const results = useMemo(() => search(query, products), [query, products]);
+  const searching = query.trim() !== '';
+  const tree = useMemo(() => buildCategoryTree(products), [products]);
 
-  const topLevelCategories = useMemo(() => {
-    const names = new Set<string>();
-    for (const product of products) {
-      const topLevel = product.categoryPath[product.categoryPath.length - 2]?.name;
-      if (topLevel) names.add(topLevel);
-    }
-    return [...names].sort((a, b) => a.localeCompare(b, 'es'));
-  }, [products]);
+  const section = useMemo(
+    () => tree.find((candidate) => candidate.id === sectionId) ?? null,
+    [tree, sectionId],
+  );
+  const shelf = useMemo(
+    () => section?.shelves.find((candidate) => candidate.id === shelfId) ?? null,
+    [section, shelfId],
+  );
+
+  const searchResults = useMemo(
+    () => (searching ? search(query, products) : []),
+    [searching, query, products],
+  );
+  const shelfProducts = useMemo(
+    () => (shelfId !== null ? products.filter((p) => p.categoryPath[1]?.id === shelfId) : []),
+    [products, shelfId],
+  );
+
+  const listing = searching ? searchResults : shelfProducts;
+  const paged = paginate(listing, page, PAGE_SIZE);
+
+  // Every view change resets to the first page. Done in the handlers rather than
+  // an effect, so a stale page number can never render an empty list mid-render.
+  const resetBrowsing = () => {
+    setSectionId(null);
+    setShelfId(null);
+    setPage(1);
+  };
 
   return (
     <section aria-label="Búsqueda de productos">
-      <SearchBar value={query} onChange={setQuery} />
+      <SearchBar
+        value={query}
+        onChange={(value) => {
+          setQuery(value);
+          setPage(1);
+          if (value.trim() !== '') {
+            setSectionId(null);
+            setShelfId(null);
+          }
+        }}
+      />
 
       {status === 'loading' ? <SearchSkeleton /> : null}
       {status === 'error' ? <ErrorState /> : null}
-      {status === 'ready' && query.trim() === '' ? (
-        <CategoryBrowse categories={topLevelCategories} onSelect={setQuery} />
+
+      {status === 'ready' && searching && searchResults.length === 0 ? <NoResultsState /> : null}
+
+      {status === 'ready' && !searching && sectionId === null ? (
+        <SectionGrid
+          sections={tree}
+          onSelect={(id) => {
+            setSectionId(id);
+            setShelfId(null);
+            setPage(1);
+          }}
+        />
       ) : null}
-      {status === 'ready' && query.trim() !== '' && results.length === 0 ? (
-        <NoResultsState />
+
+      {status === 'ready' && !searching && section && shelfId === null ? (
+        <>
+          <Breadcrumb
+            crumbs={[{ label: 'Categorías', onClick: resetBrowsing }, { label: section.name }]}
+          />
+          <ShelfList
+            section={section}
+            onSelect={(id) => {
+              setShelfId(id);
+              setPage(1);
+            }}
+          />
+        </>
       ) : null}
-      {status === 'ready' && results.length > 0 ? (
-        <ul className="product-list" role="list" aria-label="Resultados">
-          {results.map((product) => (
-            <ProductRow
-              key={product.id}
-              product={product}
-              onSelect={() => onSelectProduct(product.id)}
-            />
-          ))}
-        </ul>
+
+      {status === 'ready' && listing.length > 0 ? (
+        <>
+          {searching ? (
+            <h2 className="listing__title">
+              {listing.length} {listing.length === 1 ? 'resultado' : 'resultados'} para «{query.trim()}»
+            </h2>
+          ) : (
+            <>
+              <Breadcrumb
+                crumbs={[
+                  { label: 'Categorías', onClick: resetBrowsing },
+                  {
+                    label: section?.name ?? '',
+                    onClick: () => {
+                      setShelfId(null);
+                      setPage(1);
+                    },
+                  },
+                  { label: shelf?.name ?? '' },
+                ]}
+              />
+              <h2 className="listing__title">
+                {shelf?.name} · {listing.length} {listing.length === 1 ? 'producto' : 'productos'}
+              </h2>
+            </>
+          )}
+
+          <ul className="product-list" role="list" aria-label="Resultados">
+            {paged.items.map((product) => (
+              <ProductRow
+                key={product.id}
+                product={product}
+                onSelect={() => onSelectProduct(product.id)}
+              />
+            ))}
+          </ul>
+
+          <Pager page={paged.page} pageCount={paged.pageCount} onPageChange={setPage} />
+        </>
       ) : null}
     </section>
-  );
-}
-
-function CategoryBrowse({
-  categories,
-  onSelect,
-}: {
-  categories: string[];
-  onSelect: (name: string) => void;
-}) {
-  return (
-    <div>
-      <h2 className="category-heading">Categorías</h2>
-      <ul className="category-list" role="list">
-        {categories.map((category) => (
-          <li key={category}>
-            <button type="button" className="category-chip" onClick={() => onSelect(category)}>
-              {category}
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 

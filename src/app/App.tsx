@@ -1,21 +1,56 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { isInCart } from '../lib/cart.ts';
 import { buildSwapSignals } from '../lib/swaps.ts';
+import type { Swap } from '../types/swaps.ts';
 import { CartScreen } from './CartScreen.tsx';
-import { ProductScreen } from './ProductScreen.tsx';
+import { ProductScreen, type RecommendationContext } from './ProductScreen.tsx';
 import { SearchScreen } from './SearchScreen.tsx';
 import { useCart } from './useCart.ts';
 import { useCatalog } from './useCatalog.ts';
 
+type View =
+  | { kind: 'search' }
+  | { kind: 'cart' }
+  | { kind: 'product'; id: number; recommendation?: RecommendationContext };
+
 export function App() {
   const { products, status } = useCatalog();
   const { cart, add, remove, toggle, clear } = useCart();
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [showCart, setShowCart] = useState(false);
+  const [view, setView] = useState<View>({ kind: 'search' });
 
   const signals = useMemo(() => buildSwapSignals(products), [products]);
-  const selected = selectedId != null ? (products.find((p) => p.id === selectedId) ?? null) : null;
+  const selected =
+    view.kind === 'product' ? (products.find((p) => p.id === view.id) ?? null) : null;
+
+  // On every view change: start at the top, and move focus into the new content
+  // so assistive tech announces the change instead of the DOM silently swapping.
+  const mainRef = useRef<HTMLElement>(null);
+  const firstRender = useRef(true);
+  const viewKey = view.kind === 'product' ? `product:${view.id}` : view.kind;
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0 });
+    mainRef.current?.focus();
+  }, [viewKey]);
+
+  const openProduct = (id: number) => setView({ kind: 'product', id });
+
+  const openSwap = (swap: Swap, from: { id: number; name: string }) => {
+    setView({
+      kind: 'product',
+      id: swap.product.id,
+      recommendation: {
+        fromName: from.name,
+        reasons: swap.reasons,
+        onBackToOrigin: () => setView({ kind: 'product', id: from.id }),
+      },
+    });
+  };
 
   return (
     <>
@@ -25,10 +60,7 @@ export function App() {
           type="button"
           className="cart-button"
           aria-label={`Mi lista (${cart.items.length} productos)`}
-          onClick={() => {
-            setShowCart(true);
-            setSelectedId(null);
-          }}
+          onClick={() => setView({ kind: 'cart' })}
         >
           <svg
             width="22"
@@ -50,30 +82,32 @@ export function App() {
           ) : null}
         </button>
       </header>
-      <main className="app-main">
-        {selected ? (
+
+      <main className="app-main" ref={mainRef} tabIndex={-1}>
+        {view.kind === 'product' && selected ? (
           <ProductScreen
             product={selected}
             catalog={products}
             signals={signals}
-            onBack={() => setSelectedId(null)}
+            recommendation={view.recommendation}
+            onBack={() => setView({ kind: 'search' })}
             onAdd={() => add(selected.id)}
             added={isInCart(cart, selected.id)}
+            onSelectSwap={(swap) => openSwap(swap, { id: selected.id, name: selected.name })}
           />
-        ) : showCart ? (
+        ) : view.kind === 'cart' ? (
           <CartScreen
             cart={cart}
             products={products}
             onToggle={toggle}
             onRemove={remove}
             onClear={clear}
-            onBack={() => setShowCart(false)}
+            onBack={() => setView({ kind: 'search' })}
           />
         ) : (
-          <SearchScreen products={products} status={status} onSelectProduct={setSelectedId} />
+          <SearchScreen products={products} status={status} onSelectProduct={openProduct} />
         )}
       </main>
     </>
   );
 }
-

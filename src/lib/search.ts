@@ -3,10 +3,12 @@ import { normalizeText } from './normalize.ts';
 
 // Deliberately simple: normalize both sides, then rank by match quality.
 // Exact prefix > word-boundary prefix > substring, and name > brand > category.
-// This meets the acceptance criteria (accent-insensitive, prefix-over-fuzzy)
-// without a fuzzy-search dependency; see the Fuse.js deviation note in the plan.
+// Meets the acceptance criteria (accent-insensitive, prefix-over-fuzzy) without
+// a fuzzy-search dependency; see the Fuse.js deviation note in the plan.
 
 const MAX_RESULTS = 50;
+/** A pasted paragraph must not turn into dozens of full-catalogue scans. */
+const MAX_TOKENS = 8;
 
 type Field = 'name' | 'brand' | 'category';
 
@@ -15,25 +17,30 @@ interface Scored {
   score: number;
 }
 
-function rank(query: string, product: CatalogProduct): number | null {
+/**
+ * Scores one token against one product. Lower is better, `null` means no match.
+ * Callers summing tokens can therefore rank multi-word queries by total score.
+ */
+function rankToken(token: string, product: CatalogProduct): number | null {
   const name = normalizeText(product.name);
   const brand = normalizeText(product.brand);
   const categories = product.categoryPath.map((c) => normalizeText(c.name));
 
   const scoreFor = (field: Field): number | null => {
-    const value = field === 'name' ? name : field === 'brand' ? brand : '';
     if (field !== 'category') {
-      if (value === query) return 0;
-      if (value.startsWith(query)) return 1;
-      if (value.includes(` ${query}`)) return 3;
-      if (value.includes(query)) return 4;
+      const value = field === 'name' ? name : brand;
+      if (value === '') return null;
+      if (value === token) return 0;
+      if (value.startsWith(token)) return 1;
+      if (value.includes(` ${token}`)) return 3;
+      if (value.includes(token)) return 4;
       return null;
     }
-    const exact = categories.findIndex((c) => c === query);
+    const exact = categories.findIndex((c) => c === token);
     if (exact >= 0) return 5;
-    const starts = categories.findIndex((c) => c.startsWith(query));
+    const starts = categories.findIndex((c) => c.startsWith(token));
     if (starts >= 0) return 6;
-    const includes = categories.findIndex((c) => c.includes(query));
+    const includes = categories.findIndex((c) => c.includes(token));
     if (includes >= 0) return 7;
     return null;
   };
@@ -41,23 +48,41 @@ function rank(query: string, product: CatalogProduct): number | null {
   const base = { name: 0, brand: 10, category: 20 } as const;
   let best: number | null = null;
   for (const field of ['name', 'brand', 'category'] as const) {
-    const s = scoreFor(field);
-    if (s !== null) {
-      const total = base[field] + s;
+    const score = scoreFor(field);
+    if (score !== null) {
+      const total = base[field] + score;
       if (best === null || total < best) best = total;
     }
   }
   return best;
 }
 
+/**
+ * Accent-insensitive search where **every** word must match somewhere in the
+ * product (name, brand or category), so "natillas proteina" finds
+ * "Natillas sabor vainilla +Proteínas 12 g" instead of nothing. Requiring all
+ * words is what makes a partial phrase a miss rather than a weak hit.
+ */
 export function search(query: string, products: readonly CatalogProduct[]): CatalogProduct[] {
-  const q = normalizeText(query);
-  if (q === '') return [];
+  const tokens = normalizeText(query)
+    .split(' ')
+    .filter((token) => token !== '')
+    .slice(0, MAX_TOKENS);
+  if (tokens.length === 0) return [];
 
   const scored: Scored[] = [];
   for (const product of products) {
-    const score = rank(q, product);
-    if (score !== null) scored.push({ product, score });
+    let total = 0;
+    let matchedEveryToken = true;
+    for (const token of tokens) {
+      const score = rankToken(token, product);
+      if (score === null) {
+        matchedEveryToken = false;
+        break;
+      }
+      total += score;
+    }
+    if (matchedEveryToken) scored.push({ product, score: total });
   }
 
   scored.sort((a, b) => a.score - b.score || a.product.name.localeCompare(b.product.name, 'es'));

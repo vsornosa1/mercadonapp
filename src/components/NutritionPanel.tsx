@@ -1,13 +1,10 @@
+import { formatNutrient } from '../lib/format.ts';
 import type { NutritionFacts } from '../types/nutrition.ts';
 
 interface Row {
   label: string;
   value: number | null;
-  unit: string;
-}
-
-function formatValue(value: number): string {
-  return value.toLocaleString('es-ES');
+  unit: 'kcal' | 'g';
 }
 
 export function NutritionPanel({ nutrition }: { nutrition: NutritionFacts }) {
@@ -44,12 +41,10 @@ export function NutritionPanel({ nutrition }: { nutrition: NutritionFacts }) {
       <ul className="nutrition__list" role="list">
         {present.map((row) => (
           <li key={row.label} className="nutrition__row">
-            <span className={row.unit === 'g' && row.label.startsWith('de las') ? 'nutrition__indent' : ''}>
+            <span className={row.label.startsWith('de las') ? 'nutrition__indent' : ''}>
               {row.label}
             </span>
-            <span className="nutrition__value">
-              {formatValue(row.value!)} {row.unit}
-            </span>
+            <span className="nutrition__value">{formatNutrient(row.value!, row.unit)}</span>
           </li>
         ))}
       </ul>

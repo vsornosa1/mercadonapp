@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatPrice, formatReason } from './format';
+import { formatNutrient, formatPrice, formatReason } from './format';
 
 describe('formatPrice', () => {
   it('formats euros with a comma decimal and a non-breaking space before the symbol', () => {
@@ -16,8 +16,7 @@ describe('formatPrice', () => {
   });
 });
 
-describe('formatReason', () => {
-  it('renders the additive reason with counts', () => {
+describe('formatReason', () => {  it('renders the additive reason with counts', () => {
     expect(formatReason({ kind: 'additives', from: 3, to: 0, detail: ['407'] })).toBe(
       'menos aditivos (3 → 0)',
     );
@@ -36,5 +35,26 @@ describe('formatReason', () => {
   it('renders sugars and salt with a comma decimal', () => {
     expect(formatReason({ kind: 'sugars', from: 12, to: 4 })).toBe('menos azúcar (12 g → 4 g)');
     expect(formatReason({ kind: 'salt', from: 0.2, to: 0.1 })).toBe('menos sal (0,2 g → 0,1 g)');
+  });
+});
+
+describe('formatNutrient', () => {
+  it('rounds energy to a whole number — Open Food Facts returns long floats', () => {
+    expect(formatNutrient(76.66666666666667, 'kcal')).toBe('77 kcal');
+  });
+
+  it('keeps one decimal for macros', () => {
+    expect(formatNutrient(4.8, 'g')).toBe('4,8 g');
+    expect(formatNutrient(18, 'g')).toBe('18 g');
+    expect(formatNutrient(3.6, 'g')).toBe('3,6 g');
+  });
+
+  it('keeps two decimals below one gram, where rounding to one would distort the value', () => {
+    expect(formatNutrient(0.15, 'g')).toBe('0,15 g');
+    expect(formatNutrient(0.098, 'g')).toBe('0,1 g');
+  });
+
+  it('renders zero plainly', () => {
+    expect(formatNutrient(0, 'g')).toBe('0 g');
   });
 });

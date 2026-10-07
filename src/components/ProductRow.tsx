@@ -22,7 +22,12 @@ export function ProductRow({ product, onSelect }: ProductRowProps) {
           <span className="product-row__name">{product.name}</span>
           {product.brand ? <span className="product-row__brand">{product.brand}</span> : null}
         </span>
-        <span className="product-row__price">{formatPrice(product.unitPrice)}</span>
+        <span className="product-row__aside">
+          <span className="product-row__price">{formatPrice(product.unitPrice)}</span>
+          <span className="product-row__chevron" aria-hidden="true">
+            ›
+          </span>
+        </span>
       </button>
     </li>
   );

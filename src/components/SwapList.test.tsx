@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 import type { Swap } from '../types/swaps.ts';
@@ -27,28 +28,65 @@ const alt: EnrichedCatalogProduct = {
   processing: { basis: 'ingredient-heuristic', tier: 'unknown', additiveMarkers: [] },
 };
 
+const swaps: Swap[] = [
+  {
+    product: alt,
+    score: 2,
+    reasons: [
+      { kind: 'additives', from: 3, to: 0, detail: [] },
+      { kind: 'protein', from: 3, to: 9 },
+    ],
+  },
+];
+
 describe('SwapList', () => {
-  it('says plainly when there is no better alternative', () => {
-    render(<SwapList swaps={[]} />);
-    expect(screen.getByText('No hemos encontrado una alternativa mejor.')).toBeInTheDocument();
-  });
-
-  it('renders ranked alternatives with their numeric reasons', () => {
-    const swaps: Swap[] = [
-      {
-        product: alt,
-        score: 2,
-        reasons: [
-          { kind: 'additives', from: 3, to: 0, detail: [] },
-          { kind: 'protein', from: 3, to: 9 },
-        ],
-      },
-    ];
-    render(<SwapList swaps={swaps} />);
-
+  it('renders ranked alternatives with their benefits', () => {
+    render(<SwapList result={{ kind: 'available', swaps }} onSelect={vi.fn()} />);
     expect(screen.getByText('Alternativas mejores')).toBeInTheDocument();
     expect(screen.getByText('Yogur natural')).toBeInTheDocument();
-    expect(screen.getByText('menos aditivos (3 → 0)')).toBeInTheDocument();
-    expect(screen.getByText('más proteína (3 g → 9 g por 100 g)')).toBeInTheDocument();
+    expect(screen.getByText('Menos aditivos')).toBeInTheDocument();
+    expect(screen.getByText('3 → 0')).toBeInTheDocument();
+    expect(screen.getByText('Más proteína')).toBeInTheDocument();
+    expect(screen.getByText('3 g → 9 g por 100 g')).toBeInTheDocument();
+  });
+
+  it('opens the recommended product when tapped', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(<SwapList result={{ kind: 'available', swaps }} onSelect={onSelect} />);
+    await user.click(screen.getByRole('button', { name: /Yogur natural/ }));
+    expect(onSelect).toHaveBeenCalledWith(swaps[0]);
+  });
+
+  it('gives the button an accessible name that includes the benefits, not just the product', () => {
+    render(<SwapList result={{ kind: 'available', swaps }} onSelect={vi.fn()} />);
+    const button = screen.getByRole('button', { name: /Yogur natural/ });
+    const name = button.getAttribute('aria-label') ?? '';
+    // An aria-label overrides the element's contents, so the reasons have to be
+    // part of the label or a screen-reader user never hears why it is better.
+    expect(name).toMatch(/menos aditivos/i);
+    expect(name).toMatch(/más proteína/i);
+    expect(name).toMatch(/3 g → 9 g/);
+  });
+
+  it('omits the panel entirely for non-food — nutrition advice on shampoo is noise', () => {
+    const { container } = render(<SwapList result={{ kind: 'non-food' }} onSelect={vi.fn()} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('explains missing data instead of implying the product is good', () => {
+    render(<SwapList result={{ kind: 'no-data' }} onSelect={vi.fn()} />);
+    expect(screen.getByText(/no hay datos suficientes/i)).toBeInTheDocument();
+  });
+
+  it('gives positive feedback when nothing beats it, naming how many were compared', () => {
+    render(<SwapList result={{ kind: 'none-better', comparedCount: 27 }} onSelect={vi.fn()} />);
+    expect(screen.getByText(/27 productos de su categoría/i)).toBeInTheDocument();
+    expect(screen.getByText(/ninguno es mejor/i)).toBeInTheDocument();
+  });
+
+  it('states the single-peer case in the singular, not "1 productos"', () => {
+    render(<SwapList result={{ kind: 'none-better', comparedCount: 1 }} onSelect={vi.fn()} />);
+    expect(screen.getByText(/1 producto de su categoría/i)).toBeInTheDocument();
   });
 });

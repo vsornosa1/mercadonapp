@@ -89,3 +89,32 @@ describe('search', () => {
     expect(search('hacendado', tied).map((p) => p.id)).toEqual([11, 10]);
   });
 });
+
+describe('search — multiple words', () => {
+  const catalogue: CatalogProduct[] = [
+    { ...base, id: 1, name: 'Natillas sabor vainilla +Proteínas 12 g', brand: '+Proteínas' },
+    { ...base, id: 2, name: 'Yogur natural', brand: 'Hacendado' },
+    { ...base, id: 3, name: 'Leche entera', brand: 'Hacendado' },
+  ];
+
+  it('matches a product containing every word, even when they are not adjacent', () => {
+    expect(search('natillas proteina', catalogue).map((p) => p.id)).toEqual([1]);
+  });
+
+  it('requires all words to match — a partial match is not a result', () => {
+    expect(search('natillas hacendado', catalogue)).toEqual([]);
+  });
+
+  it('lets words match across different fields', () => {
+    // "yogur" is in the name, "hacendado" is the brand
+    expect(search('yogur hacendado', catalogue).map((p) => p.id)).toEqual([2]);
+  });
+
+  it('ignores extra whitespace between words', () => {
+    expect(search('  natillas    proteina  ', catalogue).map((p) => p.id)).toEqual([1]);
+  });
+
+  it('still ranks a single word as before', () => {
+    expect(search('leche', catalogue).map((p) => p.id)).toEqual([3]);
+  });
+});
