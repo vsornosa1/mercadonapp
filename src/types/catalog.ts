@@ -22,3 +22,11 @@ export interface CatalogProduct {
   isVariableWeight: boolean;
   shareUrl: string;
 }
+
+import type { NutritionFacts, ProcessingSignal } from './nutrition.ts';
+
+/** A catalogue product enriched with its nutrition and processing signal. */
+export interface EnrichedCatalogProduct extends CatalogProduct {
+  nutrition: NutritionFacts;
+  processing: ProcessingSignal;
+}

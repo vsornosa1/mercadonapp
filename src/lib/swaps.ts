@@ -1,6 +1,7 @@
-import type { CatalogProduct } from '../types/catalog.ts';
+import type { CatalogProduct, EnrichedCatalogProduct } from '../types/catalog.ts';
 import type { NovaGroup } from '../types/nutrition.ts';
 import type { Reason, Swap } from '../types/swaps.ts';
+import { extractENumbers } from './additives.ts';
 
 // Per-product signals the ranking reasons over. Macro fields come from Open
 // Food Facts; the additive count and codes come from Mercadona's ingredient
@@ -12,6 +13,24 @@ export interface SwapSignals {
   protein: number | null; // g per 100 g
   sugars: number | null;
   salt: number | null;
+}
+
+/**
+ * Derives the ranking signals for an enriched product. A product with no
+ * ingredient list gets additiveCount null — absence of data is not evidence
+ * of zero additives.
+ */
+export function swapSignalsFor(product: EnrichedCatalogProduct): SwapSignals {
+  const hasIngredients = !!product.ingredientsHtml && product.ingredientsHtml.trim() !== '';
+  const codes = hasIngredients ? extractENumbers(product.ingredientsHtml!) : [];
+  return {
+    additiveCount: hasIngredients ? codes.length : null,
+    additiveCodes: codes,
+    novaGroup: product.nutrition.novaGroup,
+    protein: product.nutrition.per100?.protein ?? null,
+    sugars: product.nutrition.per100?.sugars ?? null,
+    salt: product.nutrition.per100?.salt ?? null,
+  };
 }
 
 type Dimension = 'additives' | 'nova' | 'protein' | 'sugars' | 'salt';
