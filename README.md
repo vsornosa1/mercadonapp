@@ -73,7 +73,10 @@ npm run lint           # eslint --max-warnings 0
 ## Decisiones clave
 
 - **Sin servidor.** Todo se resuelve en tiempo de construcción; la app es un conjunto de archivos estáticos.
-- **`unknown` es una respuesta válida.** Sin lista de ingredientes no es "alimento entero"; sin macronutriente no es cero. Nunca se estima ni se inventa un número.
+- **`unknown` es una respuesta válida.** Sin lista de ingredientes no es "sin aditivos"; sin macronutriente no es cero. Nunca se estima ni se inventa un número.
+- **La etiqueta dice lo que se ha medido.** El vocabulario de NOVA se usa solo cuando NOVA ha producido la clasificación; si sale de nuestra heurística de ingredientes, la etiqueta describe los aditivos ("sin aditivos", "con aditivos", "muchos aditivos"), y para los frescos dice "fresco". Nunca se presenta una heurística como NOVA.
+- **Se recomienda sobre la misma señal que se muestra.** El ranking usa la clasificación compuesta que ve el usuario, así que la app no puede proponer un producto que su propia ficha marca como más procesado.
+- **El procesamiento manda sobre los macros.** Ninguna recomendación empeora el procesamiento. Un macro puede sacrificarse a cambio de uno, y siempre se enseña el coste ("a cambio: más azúcar").
 - **Dos escalas, nunca mezcladas.** NOVA (autoritativa) y nuestra heurística de ingredientes se muestran como señales distintas y etiquetadas por su origen.
 
 Consulta la especificación en `.agents/docs/intent/` y el plan en `tasks/`.

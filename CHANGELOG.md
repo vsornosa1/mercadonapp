@@ -3,6 +3,21 @@
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 Versionado [semántico](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Fixed
+
+- **Las alternativas recomendaban productos que la propia app marcaba como más procesados (85 casos).** El ranking no veía la clasificación que muestra la interfaz. Ahora `SwapSignals` incluye el `tier` compuesto, así que la recomendación y la etiqueta no pueden contradecirse.
+- **Alternativas que existían y no se ofrecían (397 casos).** 216 no tenían forma de expresarse (ahora hay un motivo `tier`) y 181 los descartaba una regla de Pareto que escondía un intercambio real.
+- **`unknown` contaba como mejora.** Significa "no lo sabemos": ahora es neutral, ni mejor ni peor que una clasificación conocida.
+- **La etiqueta "Alimento entero" sobrevaloraba.** Se aplicaba a 473 productos solo porque su lista de ingredientes no tenía números E — incluido un café en cápsula de un solo ingrediente. Ahora la etiqueta depende de la evidencia.
+
+### Changed
+
+- **El procesamiento manda sobre los macros.** Un producto con peor procesamiento nunca se recomienda; un macro puede intercambiarse por una mejora de procesamiento, y el coste se muestra con el mismo peso que el beneficio ("a cambio: más azúcar 12 g → 14 g").
+- **`Swap.product` es `EnrichedCatalogProduct`**, para que la interfaz pueda leer la clasificación del producto que recomienda.
+- `formatReason` y `formatNumber` se eliminan: el texto de los motivos vive en `benefits.ts` como única fuente, para que la etiqueta, los chips y el nombre accesible no se separen.
+
 ## [1.0.0] — 2026-10-07
 
 Primera versión: un asistente de nutrición para la compra en Mercadona, instalable y sin conexión.
