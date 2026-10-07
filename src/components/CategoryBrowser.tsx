@@ -1,8 +1,5 @@
 import type { CategorySection } from '../lib/category-tree.ts';
-
-function countLabel(count: number): string {
-  return count === 1 ? '1 producto' : `${count} productos`;
-}
+import { pluralise } from '../lib/plural.ts';
 
 export function SectionGrid({
   sections,
@@ -25,7 +22,7 @@ export function SectionGrid({
         <li key={section.id}>
           <button type="button" className="section-card" onClick={() => onSelect(section.id)}>
             <span className="section-card__name">{section.name}</span>
-            <span className="section-card__count">{countLabel(section.count)}</span>
+            <span className="section-card__count">{pluralise(section.count, 'producto', 'productos')}</span>
           </button>
         </li>
       ))}
@@ -46,7 +43,7 @@ export function ShelfList({
         <li key={shelf.id}>
           <button type="button" className="shelf-row" onClick={() => onSelect(shelf.id)}>
             <span className="shelf-row__name">{shelf.name}</span>
-            <span className="shelf-row__count">{countLabel(shelf.count)}</span>
+            <span className="shelf-row__count">{pluralise(shelf.count, 'producto', 'productos')}</span>
             <span className="shelf-row__chevron" aria-hidden="true">
               ›
             </span>

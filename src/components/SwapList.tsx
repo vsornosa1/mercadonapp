@@ -1,6 +1,7 @@
 import type { AlternativesResult } from '../lib/alternatives.ts';
 import { toBenefit, toCost } from '../lib/benefits.ts';
 import { formatPrice } from '../lib/format.ts';
+import { pluralise } from '../lib/plural.ts';
 import type { Swap } from '../types/swaps.ts';
 import { BenefitChips } from './BenefitChips.tsx';
 
@@ -59,8 +60,8 @@ export function SwapList({ result, onSelect }: SwapListProps) {
           Alternativas
         </h2>
         <p className="muted" role="status">
-          Lo hemos comparado con {result.comparedCount}{' '}
-          {result.comparedCount === 1 ? 'producto' : 'productos'} de su categoría y ninguno es mejor.
+          Lo hemos comparado con {pluralise(result.comparedCount, 'producto', 'productos')} de su
+          categoría y ninguno es mejor.
         </p>
       </section>
     );

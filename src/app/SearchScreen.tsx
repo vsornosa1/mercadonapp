@@ -6,6 +6,7 @@ import { ProductRow } from '../components/ProductRow.tsx';
 import { SearchBar } from '../components/SearchBar.tsx';
 import { buildCategoryTree } from '../lib/category-tree.ts';
 import { paginate } from '../lib/pagination.ts';
+import { pluralise } from '../lib/plural.ts';
 import { search } from '../lib/search.ts';
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 import type { CatalogStatus } from './useCatalog.ts';
@@ -105,7 +106,7 @@ export function SearchScreen({ products, status, onSelectProduct }: SearchScreen
         <>
           {searching ? (
             <h2 className="listing__title">
-              {listing.length} {listing.length === 1 ? 'resultado' : 'resultados'} para «{query.trim()}»
+              {pluralise(listing.length, 'resultado', 'resultados')} para «{query.trim()}»
             </h2>
           ) : (
             <>
@@ -123,7 +124,7 @@ export function SearchScreen({ products, status, onSelectProduct }: SearchScreen
                 ]}
               />
               <h2 className="listing__title">
-                {shelf?.name} · {listing.length} {listing.length === 1 ? 'producto' : 'productos'}
+                {shelf?.name} · {pluralise(listing.length, 'producto', 'productos')}
               </h2>
             </>
           )}
