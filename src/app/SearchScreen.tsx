@@ -3,10 +3,16 @@ import { useMemo, useState } from 'react';
 import { ProductRow } from '../components/ProductRow.tsx';
 import { SearchBar } from '../components/SearchBar.tsx';
 import { search } from '../lib/search.ts';
-import { useCatalog } from './useCatalog.ts';
+import type { EnrichedCatalogProduct } from '../types/catalog.ts';
+import type { CatalogStatus } from './useCatalog.ts';
 
-export function SearchScreen() {
-  const { products, status } = useCatalog();
+interface SearchScreenProps {
+  products: EnrichedCatalogProduct[];
+  status: CatalogStatus;
+  onSelectProduct: (id: number) => void;
+}
+
+export function SearchScreen({ products, status, onSelectProduct }: SearchScreenProps) {
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => search(query, products), [query, products]);
@@ -35,7 +41,11 @@ export function SearchScreen() {
       {status === 'ready' && results.length > 0 ? (
         <ul className="product-list" role="list" aria-label="Resultados">
           {results.map((product) => (
-            <ProductRow key={product.id} product={product} />
+            <ProductRow
+              key={product.id}
+              product={product}
+              onSelect={() => onSelectProduct(product.id)}
+            />
           ))}
         </ul>
       ) : null}
