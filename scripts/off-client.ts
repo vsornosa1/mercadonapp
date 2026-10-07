@@ -39,6 +39,12 @@ export async function fetchOffProduct(
 
     if (response.ok) return response.json();
 
+    // OFF reports an unknown barcode as an HTTP 404 (not 200 + status:0) in
+    // some cases — treat it as "not found", never as a fatal error.
+    if (response.status === 404) {
+      return { status: 0, status_verbose: 'product not found' };
+    }
+
     if ((response.status === 429 || response.status >= 500) && attempt < MAX_RETRIES) {
       const waitMs = retryAfterMs(response.headers) ?? backoffDelayMs(attempt);
       await sleepFn(waitMs);

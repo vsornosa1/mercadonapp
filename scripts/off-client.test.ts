@@ -62,6 +62,14 @@ describe('fetchOffProduct', () => {
     expect(calls).toBe(2);
   });
 
+  it('treats a 404 as a not-found product, not an error', async () => {
+    const fetchFn = async () => jsonResponse({}, 404);
+    await expect(fetchOffProduct('123', fetchFn, sleepNow)).resolves.toEqual({
+      status: 0,
+      status_verbose: 'product not found',
+    });
+  });
+
   it('gives up after exhausting retries on persistent 500s', async () => {
     let calls = 0;
     const fetchFn = async () => {

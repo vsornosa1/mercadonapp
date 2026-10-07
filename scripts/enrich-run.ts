@@ -58,7 +58,12 @@ async function main(): Promise<void> {
         offJson = JSON.parse(readFileSync(cachePath, 'utf8'));
         cached += 1;
       } else {
-        offJson = await fetchOffProduct(ean);
+        try {
+          offJson = await fetchOffProduct(ean);
+        } catch (error) {
+          console.warn(`  lookup failed for ${ean}: ${(error as Error).message}`);
+          offJson = { status: 0 };
+        }
         writeFileSync(cachePath, JSON.stringify(offJson));
         await delay(DELAY_MS);
       }
