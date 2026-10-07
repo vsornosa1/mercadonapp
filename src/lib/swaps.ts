@@ -188,29 +188,32 @@ function toTradeOff(
   };
 }
 
+/**
+ * Sort helpers for the ordering below. A missing value always sorts **last**,
+ * whichever direction is better, so an absent figure never wins a tie.
+ *
+ * The `||` chain in `ordering` relies on these returning `0` only when the two
+ * sides are equal; note that two missing values produce `NaN`, which is falsy
+ * and therefore falls through to the next dimension — exactly as intended.
+ */
+function ascending(a: number | null, b: number | null): number {
+  return (a ?? Number.POSITIVE_INFINITY) - (b ?? Number.POSITIVE_INFINITY);
+}
+
+function descending(a: number | null, b: number | null): number {
+  return (b ?? Number.NEGATIVE_INFINITY) - (a ?? Number.NEGATIVE_INFINITY);
+}
+
 /** Deterministic ordering: processing first (unknown last), then additives, then macros. */
 function ordering(a: SwapSignals, b: SwapSignals): number {
-  if (TIER_SORT[a.tier] !== TIER_SORT[b.tier]) return TIER_SORT[a.tier] - TIER_SORT[b.tier];
-
-  const aAdd = a.additiveCount ?? Number.POSITIVE_INFINITY;
-  const bAdd = b.additiveCount ?? Number.POSITIVE_INFINITY;
-  if (aAdd !== bAdd) return aAdd - bAdd;
-
-  const aNova = a.novaGroup ?? Number.POSITIVE_INFINITY;
-  const bNova = b.novaGroup ?? Number.POSITIVE_INFINITY;
-  if (aNova !== bNova) return aNova - bNova;
-
-  const aProtein = a.protein ?? Number.NEGATIVE_INFINITY;
-  const bProtein = b.protein ?? Number.NEGATIVE_INFINITY;
-  if (aProtein !== bProtein) return bProtein - aProtein;
-
-  const aSugars = a.sugars ?? Number.POSITIVE_INFINITY;
-  const bSugars = b.sugars ?? Number.POSITIVE_INFINITY;
-  if (aSugars !== bSugars) return aSugars - bSugars;
-
-  const aSalt = a.salt ?? Number.POSITIVE_INFINITY;
-  const bSalt = b.salt ?? Number.POSITIVE_INFINITY;
-  return aSalt - bSalt;
+  return (
+    TIER_SORT[a.tier] - TIER_SORT[b.tier] ||
+    ascending(a.additiveCount, b.additiveCount) ||
+    ascending(a.novaGroup, b.novaGroup) ||
+    descending(a.protein, b.protein) ||
+    ascending(a.sugars, b.sugars) ||
+    ascending(a.salt, b.salt)
+  );
 }
 
 /**
