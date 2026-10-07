@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { isInCart } from '../lib/cart.ts';
+import { buildSwapSignals } from '../lib/swaps.ts';
 import { CartScreen } from './CartScreen.tsx';
 import { ProductScreen } from './ProductScreen.tsx';
 import { SearchScreen } from './SearchScreen.tsx';
@@ -13,6 +14,7 @@ export function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showCart, setShowCart] = useState(false);
 
+  const signals = useMemo(() => buildSwapSignals(products), [products]);
   const selected = selectedId != null ? (products.find((p) => p.id === selectedId) ?? null) : null;
 
   return (
@@ -52,6 +54,8 @@ export function App() {
         {selected ? (
           <ProductScreen
             product={selected}
+            catalog={products}
+            signals={signals}
             onBack={() => setSelectedId(null)}
             onAdd={() => add(selected.id)}
             added={isInCart(cart, selected.id)}

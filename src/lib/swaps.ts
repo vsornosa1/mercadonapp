@@ -33,6 +33,17 @@ export function swapSignalsFor(product: EnrichedCatalogProduct): SwapSignals {
   };
 }
 
+/** Builds the per-product signals map the ranking consumes, once per catalogue. */
+export function buildSwapSignals(
+  products: readonly EnrichedCatalogProduct[],
+): Map<number, SwapSignals> {
+  const map = new Map<number, SwapSignals>();
+  for (const product of products) {
+    map.set(product.id, swapSignalsFor(product));
+  }
+  return map;
+}
+
 type Dimension = 'additives' | 'nova' | 'protein' | 'sugars' | 'salt';
 
 // Returns -1 if `a` is better on this dimension, +1 if worse, 0 if equal,

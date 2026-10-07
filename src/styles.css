@@ -579,6 +579,66 @@ img {
   cursor: pointer;
 }
 
+/* ---- Swap list ---- */
+.swap-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.swap-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.swap-item:last-child {
+  border-bottom: none;
+}
+
+.swap-item__thumb {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-surface);
+}
+
+.swap-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.swap-item__name {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.swap-item__reasons {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+}
+
+.swap-item__reason {
+  font-size: 0.8125rem;
+  color: var(--color-primary-dark);
+  line-height: 1.4;
+}
+
+.swap-item__price {
+  flex: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .muted {
   color: var(--color-text-muted);
 }

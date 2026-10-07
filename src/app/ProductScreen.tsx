@@ -1,18 +1,25 @@
+import { useMemo } from 'react';
+
 import { NutritionPanel } from '../components/NutritionPanel.tsx';
 import { ProcessingBadge } from '../components/ProcessingBadge.tsx';
+import { SwapList } from '../components/SwapList.tsx';
 import { formatPrice } from '../lib/format.ts';
 import { stripHtml } from '../lib/html.ts';
+import { findSwaps, type SwapSignals } from '../lib/swaps.ts';
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 
 interface ProductScreenProps {
   product: EnrichedCatalogProduct;
+  catalog: EnrichedCatalogProduct[];
+  signals: Map<number, SwapSignals>;
   onBack: () => void;
   onAdd: () => void;
   added: boolean;
 }
 
-export function ProductScreen({ product, onBack, onAdd, added }: ProductScreenProps) {
+export function ProductScreen({ product, catalog, signals, onBack, onAdd, added }: ProductScreenProps) {
   const ingredients = product.ingredientsHtml ? stripHtml(product.ingredientsHtml) : null;
+  const swaps = useMemo(() => findSwaps(product, catalog, signals, 3), [product, catalog, signals]);
 
   return (
     <section aria-label={product.name}>
@@ -46,6 +53,8 @@ export function ProductScreen({ product, onBack, onAdd, added }: ProductScreenPr
           <p className="ingredients__text">{ingredients}</p>
         </section>
       ) : null}
+
+      <SwapList swaps={swaps} />
     </section>
   );
 }

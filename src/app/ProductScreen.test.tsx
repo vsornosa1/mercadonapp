@@ -33,6 +33,8 @@ function renderScreen(product: EnrichedCatalogProduct, overrides: Partial<{ adde
   render(
     <ProductScreen
       product={product}
+      catalog={[product]}
+      signals={new Map()}
       onBack={onBack}
       onAdd={onAdd}
       added={overrides.added ?? false}
