@@ -4,6 +4,7 @@
 :root {
   --color-primary: #00a650;
   --color-primary-dark: #00843f;
+  --color-primary-strong: #007a3a; /* for white text on green, and green text on tint — meets WCAG AA */
   --color-primary-tint: #e7f6ec;
   --color-bg: #ffffff;
   --color-surface: #f4f5f0;
@@ -66,7 +67,7 @@ img {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  background: var(--color-primary);
+  background: var(--color-primary-strong);
   color: #ffffff;
 }
 
@@ -378,7 +379,7 @@ img {
 
 .badge--whole {
   background: var(--color-primary-tint);
-  color: var(--color-primary-dark);
+  color: var(--color-primary-strong);
 }
 
 .badge--processed {
@@ -463,14 +464,14 @@ img {
   font-weight: 600;
   border: none;
   border-radius: var(--radius-md);
-  background: var(--color-primary);
+  background: var(--color-primary-strong);
   color: #ffffff;
   cursor: pointer;
 }
 
 .add-button:disabled {
   background: var(--color-primary-tint);
-  color: var(--color-primary-dark);
+  color: var(--color-primary-strong);
   cursor: default;
 }
 
