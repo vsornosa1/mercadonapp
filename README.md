@@ -1,4 +1,4 @@
-# Mercadonapp
+# Mercadonapp 🥗
 
 Tu asistente de nutrición para la compra en Mercadona. Una PWA instalable que te dice qué hay de verdad en cada producto — aditivos, procesamiento y macronutrientes — y te propone una alternativa mejor del mismo pasillo.
 
