@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { isInCart } from '../lib/cart.ts';
+import { pluralise } from '../lib/plural.ts';
 import { buildSwapSignals } from '../lib/swaps.ts';
 import type { Swap } from '../types/swaps.ts';
 import { CartScreen } from './CartScreen.tsx';
@@ -59,7 +60,7 @@ export function App() {
         <button
           type="button"
           className="cart-button"
-          aria-label={`Mi lista (${cart.items.length} productos)`}
+          aria-label={`Mi lista (${pluralise(cart.items.length, 'producto', 'productos')})`}
           onClick={() => setView({ kind: 'cart' })}
         >
           <svg
