@@ -13,7 +13,13 @@ export default defineConfig({
       // the product actually rests on: app logic in src/lib, and the data-pipeline
       // pure functions in scripts (category lineage, additive parsing, enrichment).
       include: ['src/lib/**/*.ts', 'scripts/**/*.ts'],
-      exclude: ['**/*.test.ts', 'scripts/fetch-catalog.ts', 'scripts/coverage-spike.ts', 'scripts/build-bundle.ts'],
+      exclude: [
+        '**/*.test.ts',
+        'scripts/fetch-catalog.ts',
+        'scripts/coverage-spike.ts',
+        'scripts/build-bundle.ts',
+        'scripts/enrich-run.ts',
+      ],
       reporter: ['text'],
       thresholds: {
         lines: 90,
