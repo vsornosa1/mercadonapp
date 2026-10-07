@@ -1,4 +1,4 @@
-import type { CatalogProduct } from './catalog';
+import type { CatalogProduct } from './catalog.ts';
 
 export type Reason =
   | { kind: 'additives'; from: number; to: number; detail: string[] }

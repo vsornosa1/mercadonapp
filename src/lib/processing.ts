@@ -1,5 +1,5 @@
-import type { ProcessingSignal } from '../types/nutrition';
-import { extractAdditiveMarkers, extractENumbers } from './additives';
+import type { ProcessingSignal } from '../types/nutrition.ts';
+import { extractAdditiveMarkers, extractENumbers } from './additives.ts';
 
 /**
  * Classifies a product's processing tier from its ingredient text.

@@ -1,4 +1,4 @@
-import type { ProcessingSignal } from '../types/nutrition';
+import type { ProcessingSignal } from '../types/nutrition.ts';
 
 // Hand-reviewed table: barcode-less fresh products get a tier from their
 // category, because their store PLU codes will never resolve in Open Food

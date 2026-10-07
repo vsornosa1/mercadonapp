@@ -1,4 +1,4 @@
-import { normalizeText } from './normalize';
+import { normalizeText } from './normalize.ts';
 
 interface Marker {
   display: string;

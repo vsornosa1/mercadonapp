@@ -1,5 +1,5 @@
-import type { CatalogProduct } from '../types/catalog';
-import { normalizeText } from './normalize';
+import type { CatalogProduct } from '../types/catalog.ts';
+import { normalizeText } from './normalize.ts';
 
 // Deliberately simple: normalize both sides, then rank by match quality.
 // Exact prefix > word-boundary prefix > substring, and name > brand > category.
