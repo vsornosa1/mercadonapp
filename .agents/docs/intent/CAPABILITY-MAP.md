@@ -194,10 +194,11 @@ Added 2026-10-07, branch `feature/store-map`. Idea: [docs/ideas/shopping-order.m
 **Build order:** `zones` → `ordering`
 
 Specs: [SPEC-zones.md](./SPEC-zones.md), [SPEC-ordering.md](./SPEC-ordering.md).
+Intent: [INTENT-trip-order.md](./INTENT-trip-order.md) - the confirmed statement, and the four interview answers that changed these specs.
 
 ## In scope, deliberately not a module
 
-The **search-cap bug** — the results heading reports `MAX_RESULTS = 50` (the truncation limit) as if it were the real total, so every broad query claims "50 resultados" whether 51 or 900 match. It is a defect repair with no new data and no dependency on either module, so it gets a regression test rather than a spec. Expected result: *"50 de 312 · Página 1"*.
+The **search-cap bug** — the results heading reports `MAX_RESULTS = 50` (the truncation limit) as if it were the real total, so every broad query claims "50 resultados" whether 51 or 900 match. It is a defect repair with no new data and no dependency on either module, so it gets a regression test rather than a spec. **Fixed by removing the cap**, not by reporting a cap-and-total: the truncation happened after a full-catalogue scan, so returning every match and paginating the whole set cost nothing. `leche` now reports 231 matches over 12 pages. Expected result: *"50 de 312 · Página 1"*.
 
 ## Explicitly refused
 
@@ -213,6 +214,19 @@ Recorded so these are not re-proposed. Full reasoning in the idea doc's "Not Doi
 
 ## Open questions
 
-1. Is the proposed zone order right for the user's actual store? It is the one decision made by principle rather than evidence — see `SPEC-zones.md` §"The one conflict".
-2. Does `Mi orden` extend to the category browser's sections, or only to cart products?
-3. Should cluster headings appear in the cart, or does the mode chip carry enough state?
+Closed by the 2026-10-08 interview - see [INTENT-trip-order.md](./INTENT-trip-order.md):
+
+1. ~~Is the proposed zone order right for the user's store?~~ The precedence is
+   **confirmed**: physics wins, so non-food is its own block *before* the cold
+   chain and every trip ends at the freezer. Whether the sequence matches a real
+   trip is settled by use, not by more questions - the test is how many clusters
+   get moved.
+2. ~~Does `Mi orden` extend to the category browser's sections?~~ **No.** The browser
+   follows the proposal; only the cart carries a custom sequence.
+3. ~~Should cluster headings appear in the cart?~~ **Yes**, for every non-empty zone.
+
+Still open:
+
+4. Whether `Mascotas` deserves its own zone. It stays in `no-alimentacion` for now.
+5. Whether a temporarily emptied zone keeps its stored product order. Proposal:
+   kept, so removing and re-adding an item cannot quietly lose an arrangement.

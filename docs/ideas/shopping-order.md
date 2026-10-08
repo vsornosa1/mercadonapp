@@ -1,6 +1,18 @@
 # Trip order — grouping that reads as a walk, not an index
 
-Status: **proposed** · 2026-10-07 · branch `feature/store-map`
+Status: **superseded** · 2026-10-07 · branch `feature/store-map`
+
+> **Superseded by [INTENT-trip-order.md](../../.agents/docs/intent/INTENT-trip-order.md)
+> and the `zones` / `ordering` specs.** Three things below are out of date and are
+> kept only as the record of how the direction was reached:
+>
+> 1. The zone table puts **No alimentación last** (hygiene). The spec and the
+>    confirmed intent put it at 5, before the cold chain — **physics wins**.
+> 2. The shelf-count fix proposed **one owning section per shelf**. Rejected: it
+>    would displace 8 baby-formula products out of `Bebé`. Both views now key on
+>    the `(section, shelf)` pair. Shipped.
+> 3. The search-cap fix proposed showing `50 de 312`. The cap was removed instead,
+>    so the count is the true total and pagination covers all of it. Shipped.
 
 ## Problem Statement
 

@@ -4,6 +4,9 @@ Module id: `ordering` · Depends on: `zones` · Build order: 2nd (of the trip-or
 
 Project-wide commands, structure and conventions live in [CAPABILITY-MAP.md](./CAPABILITY-MAP.md); this spec adds only what is specific to ordering.
 
+The intent behind this module — and the four decisions taken in the interview that
+changed it — is [INTENT-trip-order.md](./INTENT-trip-order.md).
+
 ## Objective
 
 Make a list **read as a walk**. Zones `zones` decides what belongs together; this module decides what comes first — and, crucially, lets the user **correct it**.
@@ -59,7 +62,27 @@ export function nextMode(pref: OrderPreference, mode: OrderMode): OrderPreferenc
 | **Reset** | Clears both layers and returns to `trip`, behind a confirm |
 | **Reload** | Mode and both layers survive |
 | **Empty zone** | Omitted; never an empty heading |
+| **Zone headings** | Shown for every non-empty zone. The chip states the *mode*; the headings state the *boundaries*, and a walk whose boundaries are invisible cannot be followed |
 | **`why`** | The proposal carries a one-line reason for its order (`Congelados al final para que no se derritan`), shown with the chip |
+
+### Both screens, one vocabulary
+
+| Screen | Follows | Why |
+|---|---|---|
+| Cart | The mode in effect — proposal, `Mi orden`, or `A–Z` | This is the walk: it must be the order the user arranged |
+| Browse tree | The **proposal**, always | Browsing is findability. A custom cart order that also silently rearranged where you look things up would be surprising, and it would stop the tree being a shared reference |
+| Search results | Relevance | Reordering results by zone would fight the ranking that found the product |
+
+So the **groups** are shared (one vocabulary of seven zones) while the **sequence**
+is per-screen (the user's, or the proposal). Acceptance criterion 10 means exactly
+this and no more.
+
+### Where the chip lives
+
+Beneath the search field, at the top of the cart — **not** in the app bar. The bar is
+already carrying the name, the search field, and either the list button (phone) or
+the sections (window); a seventh control would crowd it at 375 px and compete with
+navigation for the same corner. The chip belongs with the content it describes.
 
 ### Reordering must not require dragging
 
@@ -106,7 +129,14 @@ Drag may be added on top. It is never the only way.
 
 ## Open questions
 
-1. **Chip placement on a 375 px header.** It must state the mode without crowding the cart button; possibly it belongs beneath the search field rather than in the header.
-2. **Does `Mi orden` extend to the category browser's sections**, or only to the products in the cart? Products are the clear case; sections may be over-reach.
-3. **Cluster headings in the cart.** Headings aid navigation but cost vertical space on a small screen; if the chip carries the state, headings may be redundant.
-4. **What happens to a zone's stored product order when the zone temporarily empties** — kept (so it returns as arranged) or dropped? Proposal: kept.
+1. ~~**Chip placement on a 375 px header.**~~ Settled: beneath the search field, at
+   the top of the cart, not in the app bar (see §"Where the chip lives").
+2. ~~**Does `Mi orden` extend to the category browser's sections**~~ Settled: no.
+   The browser follows the proposal; only the cart carries a custom sequence (see
+   §"Both screens, one vocabulary").
+3. ~~**Cluster headings in the cart.**~~ Settled: shown, for every non-empty zone.
+4. **What happens to a zone's stored product order when the zone temporarily
+   empties** — kept (so it returns as arranged) or dropped? Proposal: **kept**,
+   because dropping it would make removing and re-adding an item quietly lose an
+   arrangement, which is the failure mode this module is most sensitive to. To be
+   asserted rather than assumed.

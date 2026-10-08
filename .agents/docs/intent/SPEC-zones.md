@@ -33,9 +33,12 @@ Two principles disagree on where non-food goes:
 - *Hygiene* says non-food **last**, so chemicals never touch food.
 - *Physics* says the **cold chain last** — melting is irreversible, and nothing should make you walk back to the freezer.
 
-**Physics wins**, per the precedence agreed when this was refined. So `no-alimentacion` sits *before* `refrigerados`/`congelados`: it still satisfies "apart" (it is its own block, never interleaved with food), while the cold chain stays last. Heavy drinks sit at 4 for the same reason they go at the bottom of a trolley.
-
-**This is the single highest-value thing to validate** — it is the only place the design is decided by principle rather than evidence.
+**Physics wins.** Originally this was decided by argument; it has since been put to
+the person who does the walking and **confirmed** (see
+[INTENT-trip-order.md](./INTENT-trip-order.md)). So `no-alimentacion` sits *before*
+`refrigerados`/`congelados`: it still satisfies "apart" (it is its own block, never
+interleaved with food), while the cold chain stays last. Heavy drinks sit at 4 for
+the same reason they go at the bottom of a trolley.
 
 ### Bebé splits, and reuses existing logic
 
@@ -96,6 +99,33 @@ export const ZONES: readonly Zone[];
 | Zone labels | Spanish, no category jargon; the zone never invents an aisle number |
 | Stability | `groupByZone` is deterministic for identical input |
 
+### The browse tree, grouped by zone
+
+The browse screen's 26 sections are currently listed **alphabetically**, which
+interleaves *Cuidado facial* between *Conservas* and *Fruta* and puts *Limpieza y
+hogar* between *Huevos* and *Maquillaje*. That is the complaint this module exists
+to answer, and it is a browse problem, not only a cart one.
+
+**Sections stay; the order and the grouping change.** The 26 sections remain the
+unit you pick — collapsing them into 7 zone cards would lose the granularity that
+makes them findable, and *Despensa* alone would swallow eight sections into one
+card. Instead:
+
+- Sections appear in **zone order**, and each zone introduces its sections with a
+  **zone heading**.
+- Non-food therefore sits in its own block instead of being sprinkled between food
+  sections.
+- The zone heading is the only thing added; section names, drill-down and counts
+  are unchanged, so the `(section, shelf)` keying above still decides every count.
+
+This is the same vocabulary as the cart (`ordering`), which is the point: one
+grouping, two screens. The screen that *finds* a product and the screen that *walks*
+it must not disagree about where things are.
+
+Zone order here is **not** affected by `ordering`'s custom layers — browsing is
+findability, so it follows the proposal. See `ordering` §"Both screens, one
+vocabulary".
+
 ## Acceptance criteria
 
 1. **A count always matches the list it opens.** Verified across every section and shelf in the catalogue by a test that walks the real bundle — the assertion is `count === opened.length` for all of them, so the 11+ current mismatches become zero.
@@ -105,6 +135,9 @@ export const ZONES: readonly Zone[];
 5. An unknown section falls back **and** the fallback is asserted, so a future Mercadona category cannot silently disappear.
 6. `groupByZone` omits empty zones and is deterministic.
 7. Pure: no React, no network, no storage; coverage floors hold.
+8. **The browse tree presents sections grouped under zone headings, in zone
+   order** — asserted, because the alphabetical interleaving is the original
+   complaint and must not come back through a later refactor.
 
 ## Boundaries
 
@@ -125,6 +158,16 @@ export const ZONES: readonly Zone[];
 
 ## Open questions
 
-1. **Is the zone order right for your store?** The precedence question in §"The one conflict" is decided by principle, not evidence. Validate by using it.
-2. **Should `Mascotas` be its own zone?** It is currently in `no-alimentacion`; pet food is bulky and heavy, which argues for earlier placement, but grouping it with cleaning is simpler.
-3. **Do zones need labels at all in the cart?** Headings cost vertical space on a 375 px screen; the chip in `ordering` may carry enough of the state.
+1. **Is the zone order right for your store?** The precedence is confirmed
+   (physics: non-food is its own block, *before* the cold chain), but only use will
+   say whether the sequence matches a real trip. The test: how many clusters get
+   moved? Move none and the proposal is right; move five and the custom layer in
+   `ordering` is carrying the feature.
+2. **`Mascotas` stays in `no-alimentacion`** — settled for now. Pet food is bulky
+   and heavy, which argues for earlier placement, but a second non-food zone is
+   more vocabulary than the trip needs. Revisit if a trip shows it is in the wrong
+   place.
+3. **Zone headings: settled — they are shown.** Every non-empty zone carries its
+   heading, always, including a list that holds only one zone. A rule that hides
+   headings below a threshold would change the list's shape as items are added,
+   which is harder to trust than a heading that is occasionally redundant.
