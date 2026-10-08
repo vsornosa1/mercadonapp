@@ -25,8 +25,10 @@ interface Cart {
 ```
 
 - The cart is a **set of products with a count**: one line per product, plus how
-  many of it. A quantity is never zero — "none of it" is what removal is for — so
-  a count can never drift into a row that contributes nothing.
+  many of it. A quantity is never zero — "none of it" means the line is gone — so a
+  count can never drift into a row that contributes nothing. The rule lives in the
+  model (`setQuantity` clamps); the stepper reaches removal by calling
+  `removeItem`, not by asking for a quantity of zero.
 - What the list costs is **derived, never stored**: `cartTotal(cart, products)`
   multiplies each line by its quantity against the catalogue's `unitPrice`, which
   is the real price of one purchase unit (a litre of milk, the 1,07 kg of pears
@@ -48,7 +50,7 @@ interface Cart {
 | Action | Result |
 |---|---|
 | Add a product | Appended with `checked: false` and `quantity: 1`; adding an already-present product is a no-op (set semantics), surfaced as "ya está en la lista" |
-| Change quantity | `+1` / `−1`, clamped to a whole number of at least one. The step down is disabled at one rather than removing the row |
+| Change quantity | `+1` / `−1`, clamped to a whole number of at least one. At one, the step **down removes the line** and says so (`Quitar X de la lista`), because that is what a last step down means to a shopper |
 | Remove | Removes the line entirely, whatever its quantity |
 | Check / uncheck | Toggles `checked`; this is the in-aisle interaction and must be one tap on a large target |
 | Clear | Empties the cart, behind a confirm |
@@ -68,7 +70,7 @@ Checked items stay visible but de-emphasised, so I can see what I've already got
 6. No network request is made by any cart action.
 7. The total multiplies each line by its quantity; a product the catalogue no longer has is left out and said so; an empty list shows no total rather than a confident zero.
 8. Every line shows its own priced total, and the summary states how many items the total covers. It does not report a line count: `6 productos` is the number a shopper wants, and "3 líneas" is the model's vocabulary rather than theirs.
-9. A quantity can never reach zero by arithmetic, and the step down is disabled at one.
+9. A quantity can never reach zero by arithmetic: the last step down removes the line instead, and its label changes to name that. The model still clamps, so no code path can store a zero.
 10. A cart stored before quantities existed loads as one of each, and a stored quantity that could not have come from the app is treated the same way.
 11. The total warns when an item is sold by weight. It is visible text, not a tooltip.
 

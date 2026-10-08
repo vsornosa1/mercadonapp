@@ -22,9 +22,10 @@ interface CartItemRowProps {
 /**
  * A row in the list.
  *
- * The quantity stepper cannot go below one: *none* of something is what the remove
- * button is for, so the last step down is disabled rather than deleting a row the
- * user was only trying to reduce. Two affordances, each doing exactly one thing.
+ * The step down at one removes the line rather than setting a quantity of zero,
+ * and it says so: a control whose effect changes with the number beside it has to
+ * name that effect, or the last tap deletes something the user was only reducing.
+ * The remove button stays because a line of four would otherwise take three taps.
  */
 export function CartItemRow({
   item,
@@ -34,6 +35,8 @@ export function CartItemRow({
   onRemove,
   onSetQuantity,
 }: CartItemRowProps) {
+  const last = item.quantity <= 1;
+
   return (
     <li className={`cart-item${item.checked ? ' cart-item--checked' : ''}`}>
       <button
@@ -60,9 +63,8 @@ export function CartItemRow({
         <button
           type="button"
           className="stepper__button"
-          aria-label={`Quitar uno de ${product.name}`}
-          disabled={item.quantity <= 1}
-          onClick={() => onSetQuantity(item.quantity - 1)}
+          aria-label={last ? `Quitar ${product.name} de la lista` : `Quitar uno de ${product.name}`}
+          onClick={() => (last ? onRemove() : onSetQuantity(item.quantity - 1))}
         >
           −
         </button>

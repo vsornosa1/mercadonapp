@@ -276,9 +276,32 @@ describe('CartScreen — quantities', () => {
     expect(onSetQuantity).toHaveBeenCalledWith(1, 3);
   });
 
-  it('cannot take the last one away, because none of it means removing it', () => {
+  it('says what the step down will actually do at the quantity on screen', () => {
+    renderScreen({ items: [item(1, 3)], updatedAt: '' });
+    expect(screen.getByRole('button', { name: 'Quitar uno de Manzana Golden' })).toBeEnabled();
+  });
+
+  it('names the step down as a removal when it is the last one', () => {
     renderScreen({ items: [item(1, 1)], updatedAt: '' });
-    expect(screen.getByRole('button', { name: 'Quitar uno de Manzana Golden' })).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: 'Quitar Manzana Golden de la lista' }),
+    ).toBeEnabled();
+  });
+
+  it('takes the last one away by removing the line, rather than leaving a zero', async () => {
+    const user = userEvent.setup();
+    const { onRemove, onSetQuantity } = renderScreen({ items: [item(1, 1)], updatedAt: '' });
+
+    await user.click(screen.getByRole('button', { name: 'Quitar Manzana Golden de la lista' }));
+
+    expect(onRemove).toHaveBeenCalledWith(1);
+    expect(onSetQuantity).not.toHaveBeenCalled();
+  });
+
+  it('keeps removing the whole line one tap away when there are several', () => {
+    renderScreen({ items: [item(1, 4)], updatedAt: '' });
+    // The stepper would need three taps to empty this line; the remove button is
+    // still the fast path, so both stay.
     expect(screen.getByRole('button', { name: 'Eliminar Manzana Golden' })).toBeEnabled();
   });
 

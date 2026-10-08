@@ -1270,12 +1270,6 @@ img {
   }
 }
 
-.stepper__button:disabled {
-  color: var(--color-text-muted);
-  background: var(--color-surface);
-  cursor: default;
-}
-
 .stepper__value {
   min-width: 1.5rem;
   text-align: center;
