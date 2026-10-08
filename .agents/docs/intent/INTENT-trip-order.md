@@ -24,8 +24,9 @@ head). Where the two disagree, this wins.
 - **Constraint:** No invented aisles or floor plans. A wrong aisle sends me to the
   wrong aisle; a coarse zone cannot be wrong in a costly way.
 - **Out of scope:** Per-store layouts. Telemetry-based ordering. Drag as the only
-  mechanism. Quantities. The nutrition backfill for the 731 foods without data —
-  that is the next piece of work, not this one.
+  mechanism. The nutrition backfill for the 731 foods without data — that is the
+  next piece of work, not this one. *(Quantities were listed here and have since
+  been built; see SPEC-cart.md.)*
 
 ## What the interview settled
 
@@ -45,7 +46,9 @@ now confirmed by the person who does the walking, not just by reasoning.
 ## Decisions taken while writing this down
 
 Small forks not worth a question, recorded so they are reviewable rather than
-silent:
+silent. **Quantities are not among them**: they were asked and declined during this
+interview and built later the same day, once the total existed to make the error
+visible. See SPEC-cart.md §Open questions.
 
 - **Every non-empty zone gets a heading**, always. Not "only when there are two or
   more": a rule that changes the list's shape as you add items is harder to trust

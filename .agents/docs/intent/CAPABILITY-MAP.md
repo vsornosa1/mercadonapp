@@ -12,7 +12,11 @@ Approved: 2026-10-06
 
 **Success:** A month in, my cart has noticeably fewer ultra-processed products and I stop second-guessing myself at the shelf.
 
-**Out of scope (v1):** recipes, menu building, quantity/basket totals, price tracking and comparison, online ordering/checkout, barcode scanning, receipt photos, accounts and other users, native store app.
+**Out of scope (v1):** recipes, menu building, price tracking and comparison, online ordering/checkout, barcode scanning, receipt photos, accounts and other users, native store app. *(Quantity/basket totals were on this list and are now built — see SPEC-cart.md.)*
+
+**Discarded 2026-10-08:** the USDA FoodData Central / `api.data.gov` route for the
+generic-nutrition backfill. It is not the source for the 731 foods without data, and
+a future session should not reach for it. What replaces it is open.
 
 ## Modules
 

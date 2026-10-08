@@ -523,7 +523,7 @@ Every task that writes logic follows **RED → GREEN → REFACTOR** (`test-drive
 **Description:** Give the ~490 barcode-less fresh products real per-100 g nutrition from a public food-composition database, so fruit, vegetables, meat and fish can carry macros the way packaged goods do. `source: 'generic'` is already reserved in `NutritionFacts`, so this adds data without a breaking type change.
 
 **Acceptance criteria:**
-- [ ] A public source is chosen and its **licence verified before any data is copied** — candidates are BEDCA (the Spanish food composition database) and USDA FoodData Central (public domain). Licence and attribution requirements are reported to the human first.
+- [ ] A public source is chosen and its **licence verified before any data is copied**. Licence and attribution requirements are reported to the human first. **USDA FoodData Central / `api.data.gov` was discarded on 2026-10-08** — not the source. BEDCA remains a candidate, but its terms are restrictive.
 - [ ] ~250 distinct foods are mapped to source entries by hand and reviewed; the mapping is committed as data
 - [ ] Values are copied from the source — never derived, interpolated or estimated
 - [ ] `source: 'generic'` renders distinctly from `'off'`, with its own attribution
