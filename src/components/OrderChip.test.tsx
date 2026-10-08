@@ -54,14 +54,22 @@ describe('OrderChip', () => {
     expect(onChange).toHaveBeenCalledWith('az');
   });
 
-  it('cannot offer my order before anything has been arranged', () => {
+  it('does not offer my order before there is one, rather than a control that is always dead', () => {
     renderChip(defaultOrder());
-    expect(screen.getByRole('button', { name: 'Mi orden' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Mi orden' })).toBeNull();
   });
 
   it('offers my order once something has been arranged', () => {
     renderChip({ mode: 'custom', zoneOrder: ['bebidas'], withinZone: {} });
     expect(screen.getByRole('button', { name: 'Mi orden' })).toBeEnabled();
+  });
+
+  it('offers it as the one in effect the moment a move creates it', () => {
+    renderChip({ mode: 'custom', zoneOrder: ['bebidas'], withinZone: {} });
+    expect(screen.getByRole('button', { name: 'Mi orden' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('explains why the proposed order is what it is', () => {

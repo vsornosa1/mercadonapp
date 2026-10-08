@@ -1450,13 +1450,6 @@ img {
   box-shadow: var(--shadow-sm);
 }
 
-.order__option:disabled {
-  /* Visible but plainly inert: a control you cannot see reads as a missing
-     feature, not as one that is unavailable right now. */
-  color: var(--color-text-muted);
-  cursor: default;
-}
-
 .order__why {
   margin: var(--space-2) 0 0;
   font-size: var(--text-xs);

@@ -57,10 +57,10 @@ export const ZONES: readonly Zone[] = [
  * Why the proposal runs in this order, in one line.
  *
  * Separate from the per-zone `why` because the chip explains the *sequence*, not
- * each of its steps: the user asked "why is my list in this order", not "why is
- * the freezer last".
+ * each of its steps — and short, because the first half of an explanation is the
+ * half nobody reads: naming the freezer is why the sentence is here at all.
  */
-export const TRIP_WHY = 'Frescos primero y congelados al final, para que no se derritan.';
+export const TRIP_WHY = 'Congelados al final, para que no se derritan.';
 
 /**
  * The section → zone table. Data, not a branch, so moving a section is a

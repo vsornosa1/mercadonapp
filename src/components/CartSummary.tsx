@@ -22,8 +22,7 @@ export function CartSummary({ total }: CartSummaryProps) {
       <p className="cart-summary__label">Total de la lista</p>
       <p className="cart-summary__amount">{formatPrice(total.total)}</p>
       <p className="cart-summary__note">
-        {pluralise(total.units, 'producto', 'productos')} ·{' '}
-        {pluralise(total.lines, 'línea', 'líneas')}
+        {pluralise(total.units, 'producto', 'productos')}
       </p>
       {total.variableWeightCount > 0 ? (
         <p className="cart-summary__note">

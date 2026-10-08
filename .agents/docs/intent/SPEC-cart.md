@@ -52,7 +52,7 @@ interface Cart {
 | Remove | Removes the line entirely, whatever its quantity |
 | Check / uncheck | Toggles `checked`; this is the in-aisle interaction and must be one tap on a large target |
 | Clear | Empties the cart, behind a confirm |
-| Read the total | A bar above the tabs on a phone, a card beside the list on a window: what the list costs, how many items and lines it covers, and any caveat that applies |
+| Read the total | A bar above the tabs on a phone, a card beside the list on a window: what the list costs, how many items it covers, and any caveat that applies |
 | Reload | Cart, every `checked` flag and every quantity survive |
 | Empty state | Explains what to do; never a blank screen |
 
@@ -67,7 +67,7 @@ Checked items stay visible but de-emphasised, so I can see what I've already got
 5. Unit tests cover: add/remove/toggle, duplicate add, persistence round-trip, corrupt-value recovery, and the storage-key version bump.
 6. No network request is made by any cart action.
 7. The total multiplies each line by its quantity; a product the catalogue no longer has is left out and said so; an empty list shows no total rather than a confident zero.
-8. Every line shows its own priced total, and the summary states how many items and lines the total covers.
+8. Every line shows its own priced total, and the summary states how many items the total covers. It does not report a line count: `6 productos` is the number a shopper wants, and "3 líneas" is the model's vocabulary rather than theirs.
 9. A quantity can never reach zero by arithmetic, and the step down is disabled at one.
 10. A cart stored before quantities existed loads as one of each, and a stored quantity that could not have come from the app is treated the same way.
 11. The total warns when an item is sold by weight. It is visible text, not a tooltip.

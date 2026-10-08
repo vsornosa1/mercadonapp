@@ -53,7 +53,7 @@ export function nextMode(pref: OrderPreference, mode: OrderMode): OrderPreferenc
 | Concern | Behaviour |
 |---|---|
 | **Default** | `mode: 'trip'` — zones in the proposal's order, products in catalogue order within each zone |
-| **Chip** | Always visible, always stating the current mode: `Orden de compra` · `Mi orden` · `A–Z`. An order you cannot see is an order you cannot trust |
+| **Chip** | Always visible, always stating the current mode. `Mi orden` is offered only once a move has created one: before that it is the proposal under another name, and an option that is permanently disabled in the default state is dead weight rather than an invitation. An order you cannot see is an order you cannot trust |
 | **First edit** | Dragging or moving *anything* switches `mode` to `'custom'` — no separate "enter edit mode" step |
 | **Layer 1 edit** | Reorders the zone blocks; persisted immediately, written through on mutation |
 | **Layer 2 edit** | Reorders products within one zone; persisted immediately |
@@ -63,7 +63,7 @@ export function nextMode(pref: OrderPreference, mode: OrderMode): OrderPreferenc
 | **Reload** | Mode and both layers survive |
 | **Empty zone** | Omitted; never an empty heading |
 | **Zone headings** | Shown for every non-empty zone. The chip states the *mode*; the headings state the *boundaries*, and a walk whose boundaries are invisible cannot be followed |
-| **`why`** | The proposal carries a one-line reason for its order (`Congelados al final para que no se derritan`), shown with the chip |
+| **`why`** | The proposal carries a one-line reason for its order (`Congelados al final, para que no se derritan`), shown with the chip. One clause, not two: the reason is why the freezer is last, and the first half of an explanation is the half nobody reads |
 
 ### Both screens, one vocabulary
 

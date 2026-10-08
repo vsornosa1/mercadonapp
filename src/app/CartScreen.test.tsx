@@ -300,6 +300,11 @@ describe('CartScreen — quantities', () => {
     renderScreen({ items: [item(1, 2), item(2, 3)], updatedAt: '' });
     expect(summary().textContent).toContain('5 productos');
   });
+
+  it('does not count lines at the shopper, which the item count already says', () => {
+    renderScreen({ items: [item(1, 2), item(2, 3)], updatedAt: '' });
+    expect(summary().textContent).not.toMatch(/línea/i);
+  });
 });
 
 describe('CartScreen — reset', () => {

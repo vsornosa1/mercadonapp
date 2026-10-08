@@ -32,6 +32,11 @@ const MODE_LABEL: Record<OrderMode, string> = {
  */
 export function OrderChip({ order, onChange }: OrderChipProps) {
   const arranged = isCustomised(order);
+  // A mode nobody has yet is not a mode: "Mi orden" is the proposal until a move
+  // gives it a meaning, and an option that is permanently disabled in the default
+  // state is dead weight. It appears with the move that creates it — as the one in
+  // effect, which is where it belongs.
+  const modes = arranged ? MODES : MODES.filter(({ mode }) => mode !== 'custom');
 
   return (
     <div className="order">
@@ -40,15 +45,12 @@ export function OrderChip({ order, onChange }: OrderChipProps) {
         role="group"
         aria-label={`Orden de la lista: ${MODE_LABEL[order.mode]}`}
       >
-        {MODES.map(({ mode, label }) => (
+        {modes.map(({ mode, label }) => (
           <button
             key={mode}
             type="button"
             className="order__option"
             aria-pressed={order.mode === mode}
-            // Nothing has been arranged yet, so "Mi orden" would be a second name
-            // for the proposal. It reads as inert until a first move makes it real.
-            disabled={mode === 'custom' && !arranged}
             onClick={() => onChange(mode)}
           >
             {label}
