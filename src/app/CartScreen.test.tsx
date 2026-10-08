@@ -1,37 +1,72 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cartTotal } from '../lib/cart.ts';
 import { formatPrice } from '../lib/format.ts';
+import { defaultOrder, type OrderPreference } from '../lib/ordering.ts';
 import { makeProduct } from '../test-fixtures.ts';
 import type { EnrichedCatalogProduct } from '../types/catalog.ts';
 import type { Cart } from '../types/cart.ts';
 import { CartScreen } from './CartScreen.tsx';
 
-const products: EnrichedCatalogProduct[] = [
-  makeProduct({ id: 1, name: 'Plátano de Canarias IGP', unitPrice: 1.19 }),
-  makeProduct({ id: 2, name: 'Leche entera', unitPrice: 0.96 }),
+const FRUTA = [
+  { id: 3, name: 'Fruta y verdura' },
+  { id: 27, name: 'Fruta' },
+  { id: 853, name: 'Manzana' },
+];
+const LACTEOS = [
+  { id: 17, name: 'Huevos, leche y mantequilla' },
+  { id: 60, name: 'Leche' },
+  { id: 61, name: 'Entera' },
+];
+const LIMPIEZA = [
+  { id: 4, name: 'Limpieza y hogar' },
+  { id: 40, name: 'Detergente' },
+  { id: 41, name: 'Líquido' },
 ];
 
-function item(productId: number) {
-  return { productId, addedAt: '', checked: false };
-}
+const products: EnrichedCatalogProduct[] = [
+  makeProduct({ id: 1, name: 'Manzana Golden', unitPrice: 1.19, categoryPath: FRUTA, leafCategoryId: 853 }),
+  makeProduct({ id: 2, name: 'Leche entera', unitPrice: 0.96, categoryPath: LACTEOS, leafCategoryId: 61 }),
+  makeProduct({ id: 3, name: 'Detergente', unitPrice: 3.5, categoryPath: LIMPIEZA, leafCategoryId: 41 }),
+  makeProduct({ id: 4, name: 'Limpiador', unitPrice: 2, categoryPath: LIMPIEZA, leafCategoryId: 41 }),
+];
 
-function renderScreen(cart: Cart) {
-  const handlers = { onToggle: vi.fn(), onRemove: vi.fn(), onClear: vi.fn() };
+const item = (productId: number, checked = false) => ({ productId, addedAt: '', checked });
+
+function renderScreen(cart: Cart, order: OrderPreference = defaultOrder()) {
+  const onOrderChange = vi.fn();
+  const onToggle = vi.fn();
+  const onRemove = vi.fn();
+  const onClear = vi.fn();
+
   render(
     <CartScreen
       cart={cart}
       products={products}
       total={cartTotal(cart, products)}
-      onToggle={handlers.onToggle}
-      onRemove={handlers.onRemove}
-      onClear={handlers.onClear}
+      order={order}
+      onOrderChange={onOrderChange}
+      onToggle={onToggle}
+      onRemove={onRemove}
+      onClear={onClear}
     />,
   );
-  return handlers;
+
+  return { onOrderChange, onToggle, onRemove, onClear };
 }
+
+const zoneHeadings = () =>
+  screen.queryAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+
+beforeEach(() => {
+  vi.stubGlobal('confirm', vi.fn(() => true));
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('CartScreen', () => {
   it('shows an empty state when the list is empty', () => {
@@ -41,18 +76,16 @@ describe('CartScreen', () => {
 
   it('renders items and toggles them on tap', async () => {
     const user = userEvent.setup();
-    const cart: Cart = { items: [item(1)], updatedAt: '' };
-    const { onToggle } = renderScreen(cart);
+    const { onToggle } = renderScreen({ items: [item(1)], updatedAt: '' });
 
-    expect(screen.getByText('Plátano de Canarias IGP')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Marcar Plátano de Canarias IGP' }));
+    expect(screen.getByText('Manzana Golden')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Marcar Manzana Golden' }));
     expect(onToggle).toHaveBeenCalledWith(1);
   });
 
   it('removes and clears', async () => {
     const user = userEvent.setup();
-    const cart: Cart = { items: [item(2)], updatedAt: '' };
-    const { onRemove, onClear } = renderScreen(cart);
+    const { onRemove, onClear } = renderScreen({ items: [item(2)], updatedAt: '' });
 
     await user.click(screen.getByRole('button', { name: 'Eliminar Leche entera' }));
     expect(onRemove).toHaveBeenCalledWith(2);
@@ -67,13 +100,191 @@ describe('CartScreen', () => {
   });
 });
 
+describe('CartScreen — the walk', () => {
+  it('groups the list into zones, in trip order, with a heading each', () => {
+    renderScreen({ items: [item(2), item(1), item(3)], updatedAt: '' });
+    expect(zoneHeadings()).toEqual(['Frescos', 'No alimentación', 'Refrigerados']);
+  });
+
+  it('omits a zone with nothing in it, rather than an empty heading', () => {
+    renderScreen({ items: [item(1)], updatedAt: '' });
+    expect(zoneHeadings()).toEqual(['Frescos']);
+    expect(screen.queryByText('Congelados')).toBeNull();
+  });
+
+  it('keeps the non-food in its own block, not among the food', () => {
+    renderScreen({ items: [item(1), item(3), item(2)], updatedAt: '' });
+    const block = screen.getByRole('heading', { name: 'No alimentación' }).closest('section')!;
+    expect(within(block).getByText('Detergente')).toBeInTheDocument();
+    expect(within(block).queryByText('Manzana Golden')).toBeNull();
+  });
+
+  it('follows a custom zone order when there is one', () => {
+    renderScreen(
+      { items: [item(1), item(2)], updatedAt: '' },
+      { mode: 'custom', zoneOrder: ['refrigerados', 'frescos'], withinZone: {} },
+    );
+    expect(zoneHeadings()).toEqual(['Refrigerados', 'Frescos']);
+  });
+
+  it('shows the order chip, so the order in effect is never invisible', () => {
+    renderScreen({ items: [item(1)], updatedAt: '' });
+    expect(screen.getByRole('group', { name: /Orden de la lista/ })).toBeInTheDocument();
+  });
+
+  it('orders the products inside a zone when an arrangement exists', () => {
+    renderScreen(
+      { items: [item(1), item(2)], updatedAt: '' },
+      { mode: 'custom', zoneOrder: [], withinZone: { refrigerados: [2] } },
+    );
+    expect(zoneHeadings()).toEqual(['Frescos', 'Refrigerados']);
+    expect(screen.getByText('Leche entera')).toBeInTheDocument();
+  });
+});
+
+describe('CartScreen — reordering', () => {
+  it('moves a zone up, reporting the whole new order', async () => {
+    const user = userEvent.setup();
+    const { onOrderChange } = renderScreen({ items: [item(1), item(2)], updatedAt: '' });
+
+    await user.click(screen.getByRole('button', { name: 'Subir la zona Refrigerados' }));
+
+    const reported = onOrderChange.mock.calls[0]![0] as OrderPreference;
+    expect(reported.mode).toBe('custom');
+    // Relative, not adjacent: the zones between Frescos and Refrigerados are empty
+    // on this list, and a step has to clear them to move the block on screen.
+    expect(reported.zoneOrder.indexOf('refrigerados')).toBeLessThan(
+      reported.zoneOrder.indexOf('frescos'),
+    );
+  });
+
+  it('reaches a zone reorder by keyboard alone, with no pointer events', async () => {
+    const user = userEvent.setup();
+    const { onOrderChange } = renderScreen({ items: [item(1), item(2)], updatedAt: '' });
+
+    const button = screen.getByRole('button', { name: 'Subir la zona Refrigerados' });
+    button.focus();
+    expect(button).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    expect(onOrderChange).toHaveBeenCalledTimes(1);
+    expect((onOrderChange.mock.calls[0]![0] as OrderPreference).mode).toBe('custom');
+  });
+
+  it('offers no move where there is nowhere to move to', () => {
+    renderScreen({ items: [item(1), item(2)], updatedAt: '' });
+    expect(screen.getByRole('button', { name: 'Subir la zona Frescos' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Bajar la zona Frescos' })).toBeEnabled();
+  });
+
+  it('offers no product reorder in a zone that holds a single product', () => {
+    // Two disabled arrows on every row is clutter that says "nothing to do here".
+    renderScreen({ items: [item(1), item(2)], updatedAt: '' });
+    expect(screen.queryByRole('button', { name: /^Subir Manzana Golden$/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Subir Leche entera$/ })).toBeNull();
+    // ...but the zone controls are still there, because the walk is the point.
+    expect(screen.getByRole('button', { name: 'Subir la zona Refrigerados' })).toBeEnabled();
+  });
+
+  it('moves a product within its zone', async () => {
+    const user = userEvent.setup();
+    // Two products in the same zone, or there is nowhere to move.
+    const { onOrderChange } = renderScreen(
+      { items: [item(1), item(3), item(4), item(2)], updatedAt: '' },
+      defaultOrder(),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Subir Limpiador' }));
+
+    const reported = onOrderChange.mock.calls[0]![0] as OrderPreference;
+    expect(reported.mode).toBe('custom');
+    expect(reported.withinZone['no-alimentacion']).toEqual([4, 3]);
+  });
+
+  it('applies the arrangement it is given, so the moved product really moves', () => {
+    renderScreen(
+      { items: [item(3), item(4)], updatedAt: '' },
+      { mode: 'custom', zoneOrder: [], withinZone: { 'no-alimentacion': [4, 3] } },
+    );
+    const items = screen.getAllByRole('listitem').map((li) => li.textContent ?? '');
+    expect(items[0]).toContain('Limpiador');
+    expect(items[1]).toContain('Detergente');
+  });
+
+  it('has nowhere to move a product that is alone in its zone, so it offers none', () => {
+    renderScreen({ items: [item(1)], updatedAt: '' });
+    expect(screen.queryByRole('button', { name: /^Subir Manzana Golden$/ })).toBeNull();
+  });
+});
+
+describe('CartScreen — A–Z', () => {
+  const az: OrderPreference = { mode: 'az', zoneOrder: [], withinZone: {} };
+
+  it('becomes one flat list by name, with no zone headings', () => {
+    renderScreen({ items: [item(1), item(2), item(3)], updatedAt: '' }, az);
+    expect(zoneHeadings()).toEqual([]);
+    const names = screen.getAllByRole('listitem').map((li) => li.textContent ?? '');
+    expect(names[0]).toContain('Detergente');
+    expect(names[1]).toContain('Leche entera');
+    expect(names[2]).toContain('Manzana Golden');
+  });
+
+  it('hides the move controls, because A–Z is explicitly not the walk', () => {
+    renderScreen({ items: [item(1), item(2)], updatedAt: '' }, az);
+    expect(screen.queryByRole('button', { name: /^Subir/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Bajar/ })).toBeNull();
+  });
+
+  it('still shows what the list costs', () => {
+    renderScreen({ items: [item(1), item(2)], updatedAt: '' }, az);
+    expect(screen.getByRole('complementary', { name: 'Total de la lista' })).toBeInTheDocument();
+  });
+});
+
+describe('CartScreen — reset', () => {
+  const arranged: OrderPreference = { mode: 'custom', zoneOrder: ['bebidas'], withinZone: {} };
+
+  it('asks before throwing away an arrangement', async () => {
+    const user = userEvent.setup();
+    renderScreen({ items: [item(1)], updatedAt: '' }, arranged);
+
+    await user.click(screen.getByRole('button', { name: 'Restablecer orden' }));
+
+    expect(window.confirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports the reset only once it is confirmed', async () => {
+    const user = userEvent.setup();
+    const { onOrderChange } = renderScreen({ items: [item(1)], updatedAt: '' }, arranged);
+
+    await user.click(screen.getByRole('button', { name: 'Restablecer orden' }));
+
+    expect(onOrderChange).toHaveBeenCalledWith(defaultOrder());
+  });
+
+  it('keeps the arrangement when the confirmation is declined', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('confirm', vi.fn(() => false));
+    const { onOrderChange } = renderScreen({ items: [item(1)], updatedAt: '' }, arranged);
+
+    await user.click(screen.getByRole('button', { name: 'Restablecer orden' }));
+
+    expect(onOrderChange).not.toHaveBeenCalled();
+  });
+
+  it('offers nothing to reset when the order is still the proposal', () => {
+    renderScreen({ items: [item(1)], updatedAt: '' });
+    expect(screen.queryByRole('button', { name: 'Restablecer orden' })).toBeNull();
+  });
+});
+
 describe('CartScreen — what it costs', () => {
-  // The amount is read from the summary block rather than by text: Spanish
-  // currency uses a no-break space before the €, and Testing Library compares a
-  // string matcher against the normalised text.
   const summary = () => screen.getByRole('complementary', { name: 'Total de la lista' });
 
-  it('adds up one of each item', () => {
+  // Read from the summary block rather than by text: Spanish currency uses a
+  // no-break space before the €, and Testing Library compares a string matcher
+  // against the normalised text.
+  it('adds up one of each item, whatever order they are shown in', () => {
     renderScreen({ items: [item(1), item(2)], updatedAt: '' });
     expect(summary().textContent).toContain(formatPrice(2.15));
   });
@@ -91,6 +302,8 @@ describe('CartScreen — what it costs', () => {
         cart={cart}
         products={weighed}
         total={cartTotal(cart, weighed)}
+        order={defaultOrder()}
+        onOrderChange={vi.fn()}
         onToggle={vi.fn()}
         onRemove={vi.fn()}
         onClear={vi.fn()}

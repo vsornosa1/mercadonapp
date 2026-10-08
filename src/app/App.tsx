@@ -13,6 +13,7 @@ import { SearchResults } from './SearchResults.tsx';
 import { useCart } from './useCart.ts';
 import { useCatalog } from './useCatalog.ts';
 import { useIsDesktop } from './useMediaQuery.ts';
+import { useOrder } from './useOrder.ts';
 
 interface OpenProduct {
   id: number;
@@ -22,6 +23,7 @@ interface OpenProduct {
 export function App() {
   const { products, status } = useCatalog();
   const { cart, add, remove, toggle, clear } = useCart();
+  const { order, change: changeOrder } = useOrder();
   const isDesktop = useIsDesktop();
 
   const [query, setQuery] = useState('');
@@ -102,6 +104,8 @@ export function App() {
         cart={cart}
         products={products}
         total={totals}
+        order={order}
+        onOrderChange={changeOrder}
         onToggle={toggle}
         onRemove={remove}
         onClear={clear}

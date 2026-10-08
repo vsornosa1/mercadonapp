@@ -1159,12 +1159,42 @@ img {
   padding: 0;
 }
 
+/* On a phone the row is two lines: what it is on the first, the move controls on
+   the second. One line put the two move buttons in front of the product name and
+   left it 72 px wide, across four lines — the name is the thing being read, so it
+   gets the width and the controls take a line of their own. */
 .cart-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'check thumb name remove'
+    '.     .     move move';
   align-items: center;
-  gap: var(--space-3);
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
   padding: var(--space-2) 0;
   border-bottom: 1px solid var(--color-border);
+}
+
+.cart-item__toggle {
+  grid-area: check;
+}
+
+.cart-item__thumb {
+  grid-area: thumb;
+}
+
+.cart-item__name {
+  grid-area: name;
+}
+
+.cart-item .move {
+  grid-area: move;
+  justify-self: end;
+}
+
+.cart-item__remove {
+  grid-area: remove;
 }
 
 .cart-item__toggle {
@@ -1226,6 +1256,8 @@ img {
 }
 
 .cart-item--missing {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'name remove';
   justify-content: space-between;
 }
 
@@ -1296,6 +1328,133 @@ img {
   margin: var(--space-2) 0 0;
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+}
+
+/* ---- Order chip ----
+   Always states which order is in effect: an order you cannot see is an order you
+   cannot trust. Sits with the content it describes, not in the app bar. */
+.order {
+  margin-bottom: var(--space-3);
+}
+
+.order__chip {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.order__option {
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.order__option[aria-pressed='true'] {
+  background: var(--color-bg);
+  color: var(--color-primary-strong);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.order__option:disabled {
+  /* Visible but plainly inert: a control you cannot see reads as a missing
+     feature, not as one that is unavailable right now. */
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.order__why {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ---- Cart blocks (one per zone) ---- */
+.cart-block + .cart-block {
+  margin-top: var(--space-4);
+}
+
+.cart-block__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 2px solid var(--color-primary-tint);
+}
+
+.cart-block__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-primary-strong);
+}
+
+/* ---- Move controls ----
+   The required path for every reorder: keyboard-operable by construction, and
+   reliable one-handed where a drag is not. */
+.move {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.move__button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font: inherit;
+  font-size: var(--text-base);
+  line-height: 1;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .move__button:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-tint);
+  }
+}
+
+.move__button:disabled {
+  /* Readable, and inert by fill rather than by vanishing: #e3e4de on a light
+     background measured 1.28:1, which is exempt as an inactive control but is
+     indistinguishable from a missing button. */
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  cursor: default;
+}
+
+.cart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.cart-action {
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
 }
 
 /* ---- Utilities ---- */
@@ -1419,6 +1578,14 @@ img {
     border: 1px solid var(--color-border);
     border-top: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
+  }
+
+  /* A window has the width for one line, so the controls stop taking a row of
+     their own. */
+  .cart-item {
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'check thumb name move remove';
+    row-gap: 0;
   }
 
   /* Two columns of products, so a wide window is not a long thin list. */

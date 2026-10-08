@@ -106,21 +106,31 @@ export type MoveDirection = 'up' | 'down';
  *
  * Every reorder is a single step rather than drag-and-drop, so it is reachable by
  * keyboard and reliable one-handed in a shop.
+ *
+ * `visible` is the zones actually on screen. Without it, a step swaps with an
+ * *empty* zone and the block appears not to move at all — the control is clicked,
+ * the mode changes, and nothing happens. So the step is taken against the zones the
+ * user can see, and the two swap inside the full list.
  */
 export function moveZone(
   order: OrderPreference,
   zone: ZoneId,
   direction: MoveDirection,
+  visible?: readonly ZoneId[],
 ): OrderPreference {
-  const ids = orderZones(order).map((zone) => zone.id);
-  const from = ids.indexOf(zone);
+  const ids = orderZones(order).map((entry) => entry.id);
+  const shown = (visible ?? ids).filter((id) => ids.includes(id));
+
+  const from = shown.indexOf(zone);
   if (from < 0) return order;
 
   const to = direction === 'up' ? from - 1 : from + 1;
-  if (to < 0 || to >= ids.length) return order;
+  if (to < 0 || to >= shown.length) return order;
 
   const next = [...ids];
-  [next[from], next[to]] = [next[to]!, next[from]!];
+  const a = next.indexOf(zone);
+  const b = next.indexOf(shown[to]!);
+  [next[a], next[b]] = [next[b]!, next[a]!];
   return { ...order, mode: 'custom', zoneOrder: next };
 }
 

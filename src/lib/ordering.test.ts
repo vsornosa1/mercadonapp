@@ -115,6 +115,21 @@ describe('reordering zones', () => {
     expect(moved.zoneOrder.indexOf('bebidas')).toBe(zoneIds.indexOf('bebidas') - 1);
   });
 
+  it('steps past empty zones rather than swapping with one nobody can see', () => {
+    // On screen: Frescos, then Refrigerados. Everything between them is empty, so a
+    // step taken against the full list would move the block nowhere visible.
+    const moved = moveZone(defaultOrder(), 'refrigerados', 'up', ['frescos', 'refrigerados']);
+    expect(moved.zoneOrder.indexOf('refrigerados')).toBeLessThan(
+      moved.zoneOrder.indexOf('frescos'),
+    );
+  });
+
+  it('will not step past the top or bottom of what is on screen', () => {
+    const onScreen = ['frescos', 'refrigerados'] as const;
+    expect(moveZone(defaultOrder(), 'frescos', 'up', onScreen)).toEqual(defaultOrder());
+    expect(moveZone(defaultOrder(), 'refrigerados', 'down', onScreen)).toEqual(defaultOrder());
+  });
+
   it('moves a zone down', () => {
     const moved = moveZone(defaultOrder(), 'frescos', 'down');
     expect(moved.zoneOrder.indexOf('frescos')).toBe(1);
