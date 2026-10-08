@@ -171,3 +171,20 @@ vocabulary".
    heading, always, including a list that holds only one zone. A rule that hides
    headings below a threshold would change the list's shape as items are added,
    which is harder to trust than a heading that is occasionally redundant.
+
+4. **`Mascotas` deserves its own zone?** Not yet. Pet food is bulky and heavy, which
+   argues for earlier placement, but a second non-food zone is more vocabulary than
+   the trip needs.
+5. **A zone that empties and refills** keeps its stored product order. Dropping it
+   would make removing and re-adding an item quietly lose an arrangement.
+6. **`Bebé` is grouped differently on the two screens, deliberately.** The browse
+   tree groups a *section* and can only put it in one place, so `Bebé` sits with its
+   food shelves under `Despensa` (85 products). The cart groups *products*, each
+   resolved by `isFoodProduct`, so its 38 food products land in `Despensa` and its
+   47 non-food products in `No alimentación`. `node scripts/audit-trip-order.ts`
+   prints the difference: browse `Despensa` 936, cart `Despensa` 889.
+
+   The alternative - splitting the section across two zone blocks in the browse tree
+   - would show *Bebé* twice with two different counts, which is worse than a coarse
+   label on one screen. Revisit if it turns out to send someone to the wrong half of
+   the shop.

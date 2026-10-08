@@ -52,6 +52,60 @@ const drillToShelf = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(screen.getByRole('button', { name: /Aceite, vinagre y sal/ }));
 };
 
+describe('BrowseScreen — the zones', () => {
+  it('groups the sections under their zone, so the alphabetical order is gone', () => {
+    renderScreen();
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
+    expect(headings).toEqual(['Frescos', 'Despensa']);
+  });
+
+  it('keeps the non-food apart from the food, not interleaved by name', () => {
+    const oil = makeProduct({
+      id: 500,
+      name: 'Pimienta negra',
+      categoryPath: [
+        { id: 12, name: 'Aceite, especias y salsas' },
+        { id: 115, name: 'Especias' },
+        { id: 501, name: 'Pimienta' },
+      ],
+      leafCategoryId: 501,
+    });
+    const bleach = makeProduct({
+      id: 501,
+      name: 'Lejía',
+      categoryPath: [
+        { id: 4, name: 'Limpieza y hogar' },
+        { id: 40, name: 'Limpieza' },
+        { id: 401, name: 'Lejía' },
+      ],
+      leafCategoryId: 401,
+    });
+    stubViewport('phone');
+    render(
+      <BrowseScreen
+        products={[oil, bleach]}
+        status="ready"
+        onSelectProduct={vi.fn()}
+      />,
+    );
+
+    const earlier = screen.getByRole('heading', { name: 'Despensa' });
+    const later = screen.getByRole('heading', { name: 'No alimentación' });
+    expect(
+      earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('groups the desktop rail by zone too, not just the phone grid', () => {
+    renderScreen('desktop');
+    const zoneLabels = [...document.querySelectorAll('.section-rail__zone')].map(
+      (node) => node.textContent,
+    );
+    expect(zoneLabels.length).toBeGreaterThan(1);
+    expect(zoneLabels).toContain('Frescos');
+  });
+});
+
 describe('BrowseScreen — drill-down', () => {
   it('starts with sections, not a wall of category chips', () => {
     renderScreen();

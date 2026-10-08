@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest';
 
 import { makeProduct } from '../test-fixtures.ts';
 import type { CatalogProduct, EnrichedCatalogProduct } from '../types/catalog.ts';
-import { FALLBACK_ZONE, groupByZone, isMappedSection, ZONES, zoneFor, type ZoneId } from './zones.ts';
+import type { CategorySection } from './category-tree.ts';
+import {
+  FALLBACK_ZONE,
+  groupByZone,
+  groupSectionsByZone,
+  isMappedSection,
+  SECTION_TO_ZONE,
+  ZONES,
+  zoneFor,
+  type ZoneId,
+} from './zones.ts';
 
 function inSection(section: string, shelf = 'Estante', id = 1): CatalogProduct {
   return makeProduct({
@@ -151,5 +161,69 @@ describe('groupByZone', () => {
 
   it('returns nothing for an empty list', () => {
     expect(groupByZone([])).toEqual([]);
+  });
+});
+
+describe('groupSectionsByZone', () => {
+  const section = (name: string, id: number): CategorySection => ({
+    id,
+    name,
+    count: 1,
+    shelves: [],
+  });
+
+  const tree = [
+    section('Conservas, caldos y cremas', 1),
+    section('Cuidado facial y corporal', 2),
+    section('Fruta y verdura', 3),
+    section('Limpieza y hogar', 4),
+    section('Congelados', 5),
+  ];
+
+  it('returns the zones in trip order, whatever order the sections arrived in', () => {
+    expect(groupSectionsByZone(tree).map((group) => group.zone.id)).toEqual([
+      'frescos',
+      'despensa',
+      'no-alimentacion',
+      'congelados',
+    ]);
+  });
+
+  it('keeps every section exactly once, so none can be lost in the grouping', () => {
+    const grouped = groupSectionsByZone(tree).flatMap((group) =>
+      group.sections.map((entry) => entry.name),
+    );
+    expect([...grouped].sort()).toEqual(tree.map((entry) => entry.name).sort());
+  });
+
+  it('stops scattering non-food between the food sections', () => {
+    const groups = groupSectionsByZone(tree);
+    const nonFood = groups.find((group) => group.zone.id === 'no-alimentacion')!;
+    const pantry = groups.find((group) => group.zone.id === 'despensa')!;
+
+    expect(nonFood.sections.map((entry) => entry.name)).toEqual([
+      'Cuidado facial y corporal',
+      'Limpieza y hogar',
+    ]);
+    // Alphabetically, Cuidado facial sat between Conservas and Fruta.
+    expect(pantry.sections.map((entry) => entry.name)).toEqual(['Conservas, caldos y cremas']);
+  });
+
+  it('omits a zone with no sections in it', () => {
+    expect(groupSectionsByZone(tree).map((group) => group.zone.id)).not.toContain('bebidas');
+  });
+
+  it('returns nothing for no sections', () => {
+    expect(groupSectionsByZone([])).toEqual([]);
+  });
+});
+
+describe('the section table', () => {
+  it('maps every section it names to exactly one real zone', () => {
+    const names = Object.keys(SECTION_TO_ZONE);
+    expect(names).toHaveLength(26);
+    for (const name of names) {
+      expect(ZONES.map((zone) => zone.id)).toContain(SECTION_TO_ZONE[name]);
+    }
   });
 });

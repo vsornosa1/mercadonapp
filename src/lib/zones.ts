@@ -1,5 +1,6 @@
 import type { CatalogProduct, EnrichedCatalogProduct } from '../types/catalog.ts';
 import { isFoodProduct } from './alternatives.ts';
+import type { CategorySection } from './category-tree.ts';
 
 /**
  * Seven walkable zones.
@@ -65,7 +66,7 @@ export const TRIP_WHY = 'Frescos primero y congelados al final, para que no se d
  * The section → zone table. Data, not a branch, so moving a section is a
  * one-line diff in one place.
  */
-const SECTION_TO_ZONE: Record<string, ZoneId> = {
+export const SECTION_TO_ZONE: Record<string, ZoneId> = {
   'Fruta y verdura': 'frescos',
   Carne: 'mostrador',
   'Marisco y pescado': 'mostrador',
@@ -148,5 +149,33 @@ export function groupByZone(products: readonly EnrichedCatalogProduct[]): ZoneGr
   return ZONES.flatMap((zone) => {
     const group = byZone.get(zone.id);
     return group === undefined ? [] : [{ zone, products: group }];
+  });
+}
+
+/**
+ * Groups the browse tree's sections by zone.
+ *
+ * The sections themselves are unchanged — this only decides what region of the
+ * shop they are presented under. Collapsing the 26 into 7 zone cards would lose
+ * the granularity that makes them findable, and *Despensa* alone would swallow
+ * eight sections into one card.
+ *
+ * The grouping is by section *name*, resolved through the same table `zoneFor`
+ * uses, so the browse tree and the cart cannot drift apart.
+ */
+export function groupSectionsByZone(
+  sections: readonly CategorySection[],
+): { zone: Zone; sections: CategorySection[] }[] {
+  const byZone = new Map<ZoneId, CategorySection[]>();
+  for (const section of sections) {
+    const id = SECTION_TO_ZONE[section.name] ?? FALLBACK_ZONE;
+    const bucket = byZone.get(id);
+    if (bucket) bucket.push(section);
+    else byZone.set(id, [section]);
+  }
+
+  return ZONES.flatMap((zone) => {
+    const group = byZone.get(zone.id);
+    return group === undefined ? [] : [{ zone, sections: group }];
   });
 }

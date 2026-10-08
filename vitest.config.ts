@@ -21,6 +21,8 @@ export default defineConfig({
         'scripts/enrich-run.ts',
         'scripts/ensure-catalog.ts',
         'scripts/audit-alternatives.ts',
+        'scripts/audit-generic-need.ts',
+        'scripts/audit-trip-order.ts',
       ],
       reporter: ['text'],
       thresholds: {

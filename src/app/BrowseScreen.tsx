@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 
 import {
   Breadcrumb,
-  SectionGrid,
+  SectionGridByZone,
   SectionRail,
   ShelfList,
 } from '../components/CategoryBrowser.tsx';
@@ -118,7 +118,7 @@ export function BrowseScreen({ products, status, onSelectProduct }: BrowseScreen
   if (section === null) {
     return (
       <Frame>
-        <SectionGrid sections={tree} onSelect={setSectionId} />
+        <SectionGridByZone sections={tree} onSelect={setSectionId} />
       </Frame>
     );
   }
