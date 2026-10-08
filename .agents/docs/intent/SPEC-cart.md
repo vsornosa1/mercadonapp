@@ -69,7 +69,8 @@ Checked items stay visible but de-emphasised, so I can see what I've already got
 
 **Always** — write through to storage on every mutation (never rely on an unload hook); keep the cart shape free of anything derived from nutrition, so `cart` stays independent of `nutrition`.
 
-**Ask first** — adding quantities or categories to the cart model; adding any server-side persistence.
+**Ask first** — adding quantities or categories to the cart model (quantities
+were asked and declined: see open questions); adding any server-side persistence.
 
 **Never** — block the check-off interaction on a network call or on nutrition data being present; let a missing product (delisted from the catalogue) crash the cart — it renders as unavailable and can be removed.
 
@@ -78,7 +79,9 @@ Checked items stay visible but de-emphasised, so I can see what I've already got
 1. **Stale items** — if the weekly mirror drops a product that's in my cart, keep
    it, or prune it? Settled as: keep it, mark it unavailable, and leave it out of
    the total (the summary says how many were left out).
-2. **Quantities** — the total assumes one of each, which is what keeps the cart a
-   checklist. Steppers would make it a true basket total and change the cart
-   model, so it stays a question rather than an assumption.
+2. **Quantities** — settled: **keep one of each.** The cart stays a pure
+   checklist, and the total stays an honest estimate that says so. Steppers would
+   buy a truer number at the cost of a field in the cart model and a tap per
+   extra item in the aisle, which is not what the list is for. Revisit only if
+   the list stops being something you tick off.
 3. **Ordering** — manual order, catalogue order, or grouped by category so it follows a sensible walk through the shop? Grouping by category is the guess; asking because it's the one thing that affects aisle behaviour and I have no evidence either way.

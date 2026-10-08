@@ -99,9 +99,9 @@ instead of being one phone layout stretched across every screen.
 
 ## Open Questions
 
-- **Quantities.** The total assumes one of each, which keeps the cart a
-  checklist. Quantity steppers would make it a true basket total but change the
-  cart model (SPEC-cart: ask first). Asked at the end of this work.
+- **Quantities.** Settled: keep one of each. The total assumes it and says so,
+  which leaves the cart a checklist. Steppers stay available as an extension
+  inside `cartTotal()` if the list ever stops being something you tick off.
 - The trip-order initiative (`SPEC-zones.md`, `SPEC-ordering.md`) is approved but
   still owes its own task list; this plan does not cover it.
 - Version: this is a feature release → `1.1.0` rather than `1.0.1`.
