@@ -150,4 +150,21 @@ describe('App — a product', () => {
     expect(screen.queryByRole('heading', { level: 1, name: 'Plátano de Canarias IGP' })).toBeNull();
     expect(screen.getByRole('navigation', { name: 'Secciones del supermercado' })).toBeInTheDocument();
   });
+
+  it('keeps the list one tap away on a phone, even with a product open', async () => {
+    const user = renderApp('phone');
+    await screen.findByRole('button', { name: /Fruta y verdura/ });
+    await user.type(searchField(), 'platano');
+    await user.click(await screen.findByRole('button', { name: /Plátano de Canarias IGP/ }));
+
+    // The tabs step aside for the product, so the bar has to carry the list.
+    await user.click(screen.getByRole('button', { name: /Lista/ }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Mi lista' })).toBeInTheDocument();
+  });
+
+  it('offers exactly one way to the list, never two', async () => {
+    renderApp('phone');
+    await screen.findByRole('button', { name: /Fruta y verdura/ });
+    expect(screen.getAllByRole('button', { name: /Lista/ })).toHaveLength(1);
+  });
 });

@@ -126,6 +126,8 @@ export function App() {
         onSelectTab={selectTab}
         cartCount={cart.items.length}
         cartTotal={totals.total}
+        // The tabs are absent exactly when the bar has to carry the list.
+        listButton={!isDesktop && selected !== null}
       />
 
       <main className="app-main" ref={mainRef} tabIndex={-1}>

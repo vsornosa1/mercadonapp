@@ -144,7 +144,35 @@ img {
   font-weight: 700;
 }
 
-.top-nav__total {
+/* The list, carried by the bar when the tabs are not on screen (a phone with a
+   product open). Exactly one of the two is ever present. */
+.app-header__list {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  min-height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.22);
+  color: #ffffff;
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .app-header__list:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* A count or a total on a green bar: white pill, dark green text, 5.46:1. */
+.bar-pill {
+  display: inline-flex;
+  align-items: center;
   padding: 0 var(--space-2);
   border-radius: 999px;
   background: #ffffff;
@@ -153,7 +181,6 @@ img {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
-
 /* ---- Screen title ---- */
 .screen-title {
   margin: var(--space-4) 0 var(--space-3);

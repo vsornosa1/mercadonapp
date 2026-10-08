@@ -109,3 +109,30 @@ describe('AppHeader', () => {
     expect(screen.getByRole('button', { name: 'Lista' })).toBeInTheDocument();
   });
 });
+
+describe('AppHeader — reaching the list', () => {
+  it('carries the list when the tabs are not there to do it', async () => {
+    stubViewport('phone');
+    const user = userEvent.setup();
+    const { onSelectTab } = renderHeader({ listButton: true, cartCount: 2, cartTotal: 4.3 });
+
+    const button = screen.getByRole('button', { name: /Lista/ });
+    expect(button.getAttribute('aria-label')).toContain('2 productos');
+    expect(button.getAttribute('aria-label')).toContain('4,30');
+
+    await user.click(button);
+    expect(onSelectTab).toHaveBeenCalledWith('cart');
+  });
+
+  it('offers the list even when it is empty, so it is not a control that comes and goes', () => {
+    stubViewport('phone');
+    renderHeader({ listButton: true, cartCount: 0, cartTotal: 0 });
+    expect(screen.getByRole('button', { name: 'Lista' })).toBeInTheDocument();
+  });
+
+  it('does not offer a second way to the list where the tabs already are', () => {
+    stubViewport('phone');
+    renderHeader({ listButton: false, cartCount: 2, cartTotal: 4.3 });
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+});

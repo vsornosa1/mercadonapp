@@ -11,6 +11,15 @@ interface AppHeaderProps {
   onSelectTab: (tab: TabId) => void;
   cartCount: number;
   cartTotal: number;
+  /**
+   * Whether the bar must carry the list itself.
+   *
+   * The invariant is exactly one persistent way to reach the list: the tabs when
+   * they are on screen, this when they are not. A phone hides its tabs for a
+   * product — a pushed view with its own way back — but the list is the reason
+   * the app is open in the shop, so it cannot become a dead end.
+   */
+  listButton?: boolean;
 }
 
 /**
@@ -29,33 +38,52 @@ export function AppHeader({
   onSelectTab,
   cartCount,
   cartTotal,
+  listButton = false,
 }: AppHeaderProps) {
   const isDesktop = useIsDesktop();
+  const withCount = cartCount > 0;
 
   return (
     <header className="app-header">
       {/* A brand mark, not a heading: each view owns the one h1 on the page. */}
       <p className="app-header__title">Mercadonapp</p>
 
+      {listButton ? (
+        <button
+          type="button"
+          className="app-header__list"
+          aria-label={withCount ? cartTabName(cartCount, cartTotal) : tabLabel('cart')}
+          onClick={() => onSelectTab('cart')}
+        >
+          <NavIcon tab="cart" size={18} />
+          <span aria-hidden={withCount ? 'true' : undefined}>{tabLabel('cart')}</span>
+          {withCount ? (
+            <span className="bar-pill" aria-hidden="true">
+              {cartCount}
+            </span>
+          ) : null}
+        </button>
+      ) : null}
+
       <SearchBar value={query} onChange={onQueryChange} />
 
       {isDesktop ? (
         <nav className="top-nav" aria-label="Secciones">
           {NAV_TABS.map((tab) => {
-            const withCount = tab === 'cart' && cartCount > 0;
+            const tabWithCount = tab === 'cart' && withCount;
             return (
               <button
                 key={tab}
                 type="button"
                 className="top-nav__tab"
                 aria-current={tab === activeTab ? 'page' : undefined}
-                aria-label={withCount ? cartTabName(cartCount, cartTotal) : tabLabel(tab)}
+                aria-label={tabWithCount ? cartTabName(cartCount, cartTotal) : tabLabel(tab)}
                 onClick={() => onSelectTab(tab)}
               >
                 <NavIcon tab={tab} size={18} />
-                <span aria-hidden={withCount ? 'true' : undefined}>{tabLabel(tab)}</span>
-                {withCount ? (
-                  <span className="top-nav__total" aria-hidden="true">
+                <span aria-hidden={tabWithCount ? 'true' : undefined}>{tabLabel(tab)}</span>
+                {tabWithCount ? (
+                  <span className="bar-pill" aria-hidden="true">
                     {formatPrice(cartTotal)}
                   </span>
                 ) : null}
