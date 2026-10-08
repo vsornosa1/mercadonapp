@@ -8,17 +8,17 @@ Plan: [plan.md](./plan.md) · Intent: [INTENT-trip-order.md](../.agents/docs/int
 section→zone table, and the two pure functions over them.
 
 **Acceptance criteria:**
-- [ ] `ZONES` is the seven zones in trip order, each with its Spanish label and a
+- [x] `ZONES` is the seven zones in trip order, each with its Spanish label and a
       one-line `why`
-- [ ] `zoneFor(product)` assigns a zone, resolving the `Bebé` split through the
+- [x] `zoneFor(product)` assigns a zone, resolving the `Bebé` split through the
       existing `isFoodProduct`
-- [ ] `groupByZone` returns non-empty zones in order, and is deterministic
-- [ ] A section absent from the table falls back to `despensa`, and the fallback is
+- [x] `groupByZone` returns non-empty zones in order, and is deterministic
+- [x] A section absent from the table falls back to `despensa`, and the fallback is
       observable rather than silent
-- [ ] Pure: no React, no network, no storage
+- [x] Pure: no React, no network, no storage
 
 **Verification:**
-- [ ] `npx vitest run src/lib/zones.test.ts`
+- [x] `npx vitest run src/lib/zones.test.ts`
 
 **Dependencies:** None
 
@@ -32,16 +32,16 @@ section→zone table, and the two pure functions over them.
 not for fixtures.
 
 **Acceptance criteria:**
-- [ ] Every product in `public/catalog/products.json` gets exactly one zone, and
+- [x] Every product in `public/catalog/products.json` gets exactly one zone, and
       the seven counts sum to the catalogue size
-- [ ] All 26 sections appear in `SECTION_TO_ZONE`; a section present in the data but
+- [x] All 26 sections appear in `SECTION_TO_ZONE`; a section present in the data but
       missing from the table fails the test
-- [ ] Baby formula lands in `despensa` and nappies in `no-alimentacion`, asserted
+- [x] Baby formula lands in `despensa` and nappies in `no-alimentacion`, asserted
       from real products
-- [ ] Fails if the table drifts from the catalogue
+- [x] Fails if the table drifts from the catalogue
 
 **Verification:**
-- [ ] `npx vitest run src/lib/zones.test.ts`
+- [x] `npx vitest run src/lib/zones.test.ts`
 
 **Dependencies:** Task 1
 
@@ -56,13 +56,13 @@ the tree and the listing disagreed by up to 107. Both paths now key on
 `(section, shelf)`; this test is what keeps that true.
 
 **Acceptance criteria:**
-- [ ] For every section and every shelf in the real bundle, the count shown equals
+- [x] For every section and every shelf in the real bundle, the count shown equals
       the length of the list it opens
-- [ ] Written against the real bundle, not fixtures, so it covers all 26 sections
+- [x] Written against the real bundle, not fixtures, so it covers all 26 sections
       and every shelf
 
 **Verification:**
-- [ ] `npx vitest run src/lib/category-tree.test.ts`
+- [x] `npx vitest run src/lib/category-tree.test.ts`
 
 **Dependencies:** None
 
@@ -72,7 +72,7 @@ the tree and the listing disagreed by up to 107. Both paths now key on
 
 ## Checkpoint: After Tasks 1-3
 
-- [ ] `npm test`, `npm run typecheck`, `npm run lint` clean
+- [x] `npm test`, `npm run typecheck`, `npm run lint` clean
 
 ## Task 4: The order preference
 
@@ -80,13 +80,13 @@ the tree and the listing disagreed by up to 107. Both paths now key on
 on it.
 
 **Acceptance criteria:**
-- [ ] A fresh preference is `trip` with both layers empty
-- [ ] `isCustomised` is false for `trip` and true once either layer is set
-- [ ] `nextMode` switches mode without touching either layer
-- [ ] `resetOrder` clears both layers and returns to `trip`
+- [x] A fresh preference is `trip` with both layers empty
+- [x] `isCustomised` is false for `trip` and true once either layer is set
+- [x] `nextMode` switches mode without touching either layer
+- [x] `resetOrder` clears both layers and returns to `trip`
 
 **Verification:**
-- [ ] `npx vitest run src/lib/ordering.test.ts`
+- [x] `npx vitest run src/lib/ordering.test.ts`
 
 **Dependencies:** Task 1
 
@@ -99,13 +99,13 @@ on it.
 **Description:** `orderZones` applies a custom zone order over the proposal.
 
 **Acceptance criteria:**
-- [ ] With no custom order, returns the proposal
-- [ ] A partial custom order keeps the named zones first and appends the rest, so a
+- [x] With no custom order, returns the proposal
+- [x] A partial custom order keeps the named zones first and appends the rest, so a
       zone added later cannot vanish
-- [ ] Unknown zone ids in storage are ignored rather than throwing
+- [x] Unknown zone ids in storage are ignored rather than throwing
 
 **Verification:**
-- [ ] `npx vitest run src/lib/ordering.test.ts`
+- [x] `npx vitest run src/lib/ordering.test.ts`
 
 **Dependencies:** Task 4
 
@@ -118,14 +118,14 @@ on it.
 **Description:** `orderWithinZone` applies a per-zone product arrangement.
 
 **Acceptance criteria:**
-- [ ] Products named in the layer come first, in that order
-- [ ] Products not named keep catalogue order after them
-- [ ] Ids no longer in the catalogue are ignored, and the rest of the arrangement
+- [x] Products named in the layer come first, in that order
+- [x] Products not named keep catalogue order after them
+- [x] Ids no longer in the catalogue are ignored, and the rest of the arrangement
       still applies
-- [ ] Does not mutate its input
+- [x] Does not mutate its input
 
 **Verification:**
-- [ ] `npx vitest run src/lib/ordering.test.ts`
+- [x] `npx vitest run src/lib/ordering.test.ts`
 
 **Dependencies:** Task 4
 
@@ -139,14 +139,14 @@ on it.
 same degradation contract as `loadCart`.
 
 **Acceptance criteria:**
-- [ ] Mode and both layers survive a save/load round trip
-- [ ] A corrupt or partially-valid stored value degrades to the proposal without
+- [x] Mode and both layers survive a save/load round trip
+- [x] A corrupt or partially-valid stored value degrades to the proposal without
       throwing
-- [ ] A zone emptied and refilled keeps its stored arrangement
-- [ ] Stored ids absent from the catalogue do not destroy the arrangement
+- [x] A zone emptied and refilled keeps its stored arrangement
+- [x] Stored ids absent from the catalogue do not destroy the arrangement
 
 **Verification:**
-- [ ] `npx vitest run src/lib/ordering.test.ts src/lib/cart.test.ts`
+- [x] `npx vitest run src/lib/ordering.test.ts src/lib/cart.test.ts`
 
 **Dependencies:** Tasks 5, 6
 
@@ -156,21 +156,21 @@ same degradation contract as `loadCart`.
 
 ## Checkpoint: After Tasks 4-7
 
-- [ ] Both layers round-trip through storage
-- [ ] `A–Z` proven non-destructive by an explicit test
+- [x] Both layers round-trip through storage
+- [x] `A–Z` proven non-destructive by an explicit test
 
 ## Task 8: The cart, grouped by zone
 
 **Description:** Render the list in zone blocks with a heading per non-empty zone.
 
 **Acceptance criteria:**
-- [ ] Every non-empty zone appears with its heading; empty zones are omitted
-- [ ] Ordering follows the mode in effect
-- [ ] Phone and window arrangements both deliberate — not one stretched
-- [ ] Check-off, remove and the total all still work
+- [x] Every non-empty zone appears with its heading; empty zones are omitted
+- [x] Ordering follows the mode in effect
+- [x] Phone and window arrangements both deliberate — not one stretched
+- [x] Check-off, remove and the total all still work
 
 **Verification:**
-- [ ] `npx vitest run src/app/CartScreen.test.tsx`
+- [x] `npx vitest run src/app/CartScreen.test.tsx`
 
 **Dependencies:** Tasks 1, 4
 
@@ -185,13 +185,13 @@ same degradation contract as `loadCart`.
 reason.
 
 **Acceptance criteria:**
-- [ ] Reads `Orden de compra`, `Mi orden` or `A–Z`, and changes with the mode
-- [ ] Its accessible name states the mode, not only its colour
-- [ ] Carries the `why` line for the proposal
-- [ ] Sits beneath the search field at the top of the cart, not in the app bar
+- [x] Reads `Orden de compra`, `Mi orden` or `A–Z`, and changes with the mode
+- [x] Its accessible name states the mode, not only its colour
+- [x] Carries the `why` line for the proposal
+- [x] Sits beneath the search field at the top of the cart, not in the app bar
 
 **Verification:**
-- [ ] `npx vitest run src/components/OrderChip.test.tsx`
+- [x] `npx vitest run src/components/OrderChip.test.tsx`
 
 **Dependencies:** Task 4
 
@@ -205,15 +205,15 @@ reason.
 **Description:** Every reorder achievable without dragging, by keyboard alone.
 
 **Acceptance criteria:**
-- [ ] Zones can be moved up and down; the order persists
-- [ ] Products can be moved within their zone; the order persists
-- [ ] The first move switches the mode to `Mi orden`, with no separate edit mode
-- [ ] A test performs a move with keyboard events only, no pointer events
-- [ ] Disabled at the ends, and once the end is reached the control is not a
+- [x] Zones can be moved up and down; the order persists
+- [x] Products can be moved within their zone; the order persists
+- [x] The first move switches the mode to `Mi orden`, with no separate edit mode
+- [x] A test performs a move with keyboard events only, no pointer events
+- [x] Disabled at the ends, and once the end is reached the control is not a
       no-op that looks active
 
 **Verification:**
-- [ ] `npx vitest run src/app/CartScreen.test.tsx`
+- [x] `npx vitest run src/app/CartScreen.test.tsx`
 
 **Dependencies:** Tasks 5, 6, 7, 8
 
@@ -226,13 +226,13 @@ reason.
 **Description:** The temporary view and the escape hatch.
 
 **Acceptance criteria:**
-- [ ] `A–Z` sorts by name and hides the move controls
-- [ ] Entering and leaving `A–Z` preserves both custom layers exactly
-- [ ] Reset returns to the proposal and clears both layers, behind a confirm
-- [ ] Reload preserves the mode and both layers
+- [x] `A–Z` sorts by name and hides the move controls
+- [x] Entering and leaving `A–Z` preserves both custom layers exactly
+- [x] Reset returns to the proposal and clears both layers, behind a confirm
+- [x] Reload preserves the mode and both layers
 
 **Verification:**
-- [ ] `npx vitest run src/app/CartScreen.test.tsx src/lib/ordering.test.ts`
+- [x] `npx vitest run src/app/CartScreen.test.tsx src/lib/ordering.test.ts`
 
 **Dependencies:** Tasks 7, 9, 10
 
@@ -242,9 +242,9 @@ reason.
 
 ## Checkpoint: After Task 11
 
-- [ ] Full suite green
-- [ ] Browser pass at 375 px and 1280 px
-- [ ] Review with the human before the browse change
+- [x] Full suite green
+- [x] Browser pass at 375 px and 1280 px
+- [x] Review with the human before the browse change
 
 ## Task 12: The browse tree, grouped by zone
 
@@ -252,14 +252,14 @@ reason.
 order, so the alphabetical interleaving goes away.
 
 **Acceptance criteria:**
-- [ ] Sections appear in zone order, each zone introducing its sections
-- [ ] `Cuidado facial y corporal` never sits between `Conservas` and `Fruta`
-- [ ] Non-food sits in its own block
-- [ ] Section counts still equal the lists they open, on both layouts
-- [ ] Drill-down and the breadcrumb are unchanged
+- [x] Sections appear in zone order, each zone introducing its sections
+- [x] `Cuidado facial y corporal` never sits between `Conservas` and `Fruta`
+- [x] Non-food sits in its own block
+- [x] Section counts still equal the lists they open, on both layouts
+- [x] Drill-down and the breadcrumb are unchanged
 
 **Verification:**
-- [ ] `npx vitest run src/app/BrowseScreen.test.tsx`
+- [x] `npx vitest run src/app/BrowseScreen.test.tsx`
 
 **Dependencies:** Tasks 1, 3
 
@@ -271,7 +271,7 @@ order, so the alphabetical interleaving goes away.
 
 ## Checkpoint: After Task 12
 
-- [ ] Counts still match on both layouts
+- [x] Counts still match on both layouts
 
 ## Task 13: Verification
 
@@ -279,15 +279,15 @@ order, so the alphabetical interleaving goes away.
 the suite.
 
 **Acceptance criteria:**
-- [ ] Catalogue-wide audit assertions pass in one run
-- [ ] Browser pass at 320, 375, 768, 840, 1024, 1280, 1440 px: no horizontal
+- [x] Catalogue-wide audit assertions pass in one run
+- [x] Browser pass at 320, 375, 768, 840, 1024, 1280, 1440 px: no horizontal
       overflow, layout switch unchanged
-- [ ] Contrast audit clean on cart and browse in both layouts
-- [ ] A reorder is walked end to end with the keyboard only, then survives a reload
-- [ ] Total suite, typecheck, lint, build all green
+- [x] Contrast audit clean on cart and browse in both layouts
+- [x] A reorder is walked end to end with the keyboard only, then survives a reload
+- [x] Total suite, typecheck, lint, build all green
 
 **Verification:**
-- [ ] `npm test`, `npm run build`, `npm run lint`
+- [x] `npm test`, `npm run build`, `npm run lint`
 
 **Dependencies:** Tasks 1-12
 
@@ -300,12 +300,12 @@ the suite.
 **Description:** Version to 1.1.0 and merge to `main`.
 
 **Acceptance criteria:**
-- [ ] `package.json` version is 1.1.0
-- [ ] The branch merges to `main` with a clean tree
-- [ ] 1.1.0 tagged
+- [x] `package.json` version is 1.1.0
+- [x] The branch merges to `main` with a clean tree
+- [x] 1.1.0 tagged
 
 **Verification:**
-- [ ] `git --no-pager log --oneline -1 main`
+- [x] `git --no-pager log --oneline -1 main`
 
 **Dependencies:** Task 13
 
@@ -315,5 +315,5 @@ the suite.
 
 ## Checkpoint: Complete
 
-- [ ] Every acceptance criterion met
-- [ ] Merged and tagged
+- [x] Every acceptance criterion met
+- [x] Merged and tagged
