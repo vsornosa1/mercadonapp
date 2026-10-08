@@ -1,4 +1,5 @@
-import { cartTabName, NavIcon, NAV_TABS, tabLabel, type TabId } from './nav-tabs.tsx';
+import { Icon } from './icons.tsx';
+import { navTabAttributes, NAV_TABS, tabIcon, tabLabel, type TabId } from './nav-tabs.tsx';
 
 interface BottomNavProps {
   active: TabId;
@@ -19,23 +20,29 @@ export function BottomNav({ active, cartCount, cartTotal, onSelect }: BottomNavP
   return (
     <nav className="bottom-nav" aria-label="Secciones">
       {NAV_TABS.map((tab) => {
-        const withCount = tab === 'cart' && cartCount > 0;
+        const { labelled, ...attributes } = navTabAttributes(
+          tab,
+          tab === active,
+          cartCount,
+          cartTotal,
+        );
+        const badge = tab === 'cart' && cartCount > 0 ? cartCount : null;
+
         return (
           <button
             key={tab}
             type="button"
             className="bottom-nav__tab"
-            aria-current={tab === active ? 'page' : undefined}
-            aria-label={withCount ? cartTabName(cartCount, cartTotal) : tabLabel(tab)}
+            {...attributes}
             onClick={() => onSelect(tab)}
           >
-            <NavIcon tab={tab} />
-            <span aria-hidden={withCount ? 'true' : undefined}>{tabLabel(tab)}</span>
-            {withCount ? (
+            <Icon name={tabIcon(tab)} className="nav-icon" />
+            <span aria-hidden={labelled ? undefined : 'true'}>{tabLabel(tab)}</span>
+            {badge === null ? null : (
               <span className="bottom-nav__badge" aria-hidden="true">
-                {cartCount}
+                {badge}
               </span>
-            ) : null}
+            )}
           </button>
         );
       })}

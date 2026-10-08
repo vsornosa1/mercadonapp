@@ -253,28 +253,24 @@ function buildBlocks(
 
   // Only the zones with something in them: an empty one would take a step from a
   // reorder that the user cannot see the result of.
-  const zoneIds = orderZones(order)
-    .map((zone) => zone.id)
-    .filter((id) => (byZone.get(id)?.length ?? 0) > 0);
+  const presentZones = orderZones(order).filter((zone) => (byZone.get(zone.id)?.length ?? 0) > 0);
 
-  const blocks = orderZones(order)
-    .filter((zone) => zoneIds.includes(zone.id))
-    .map((zone) => {
-      const entries = byZone.get(zone.id)!;
-      // Within a zone, the order things were added; layer 2 reorders it once the
-      // user says so.
-      const arranged = orderWithinZone(
-        order,
-        zone.id,
-        entries.map((entry) => entry.product),
-      );
-      return {
-        key: zone.id,
-        heading: zone.label,
-        zone: zone.id,
-        rows: arranged.map((product) => rowByProduct.get(product.id)!),
-      };
-    });
+  const blocks = presentZones.map((zone) => {
+    const entries = byZone.get(zone.id)!;
+    // Within a zone, the order things were added; layer 2 reorders it once the
+    // user says so.
+    const arranged = orderWithinZone(
+      order,
+      zone.id,
+      entries.map((entry) => entry.product),
+    );
+    return {
+      key: zone.id,
+      heading: zone.label,
+      zone: zone.id,
+      rows: arranged.map((product) => rowByProduct.get(product.id)!),
+    };
+  });
 
-  return { blocks, zoneIds };
+  return { blocks, zoneIds: presentZones.map((zone) => zone.id) };
 }

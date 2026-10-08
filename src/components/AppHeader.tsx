@@ -1,6 +1,7 @@
 import { useIsDesktop } from '../app/useMediaQuery.ts';
 import { formatPrice } from '../lib/format.ts';
-import { cartTabName, NavIcon, NAV_TABS, tabLabel, type TabId } from './nav-tabs.tsx';
+import { Icon } from './icons.tsx';
+import { navTabAttributes, NAV_TABS, tabIcon, tabLabel, type TabId } from './nav-tabs.tsx';
 import { SearchBar } from './SearchBar.tsx';
 
 interface AppHeaderProps {
@@ -41,7 +42,7 @@ export function AppHeader({
   listButton = false,
 }: AppHeaderProps) {
   const isDesktop = useIsDesktop();
-  const withCount = cartCount > 0;
+  const listAttributes = navTabAttributes('cart', false, cartCount, cartTotal);
 
   return (
     <header className="app-header">
@@ -52,16 +53,18 @@ export function AppHeader({
         <button
           type="button"
           className="app-header__list"
-          aria-label={withCount ? cartTabName(cartCount, cartTotal) : tabLabel('cart')}
+          aria-label={listAttributes['aria-label']}
           onClick={() => onSelectTab('cart')}
         >
-          <NavIcon tab="cart" size={18} />
-          <span aria-hidden={withCount ? 'true' : undefined}>{tabLabel('cart')}</span>
-          {withCount ? (
+          <Icon name="cart" size={18} />
+          <span aria-hidden={listAttributes.labelled ? undefined : 'true'}>
+            {tabLabel('cart')}
+          </span>
+          {cartCount === 0 ? null : (
             <span className="bar-pill" aria-hidden="true">
               {cartCount}
             </span>
-          ) : null}
+          )}
         </button>
       ) : null}
 
@@ -70,19 +73,25 @@ export function AppHeader({
       {isDesktop ? (
         <nav className="top-nav" aria-label="Secciones">
           {NAV_TABS.map((tab) => {
-            const tabWithCount = tab === 'cart' && withCount;
+            const { labelled, ...attributes } = navTabAttributes(
+              tab,
+              tab === activeTab,
+              cartCount,
+              cartTotal,
+            );
+            const showTotal = tab === 'cart' && cartCount > 0;
+
             return (
               <button
                 key={tab}
                 type="button"
                 className="top-nav__tab"
-                aria-current={tab === activeTab ? 'page' : undefined}
-                aria-label={tabWithCount ? cartTabName(cartCount, cartTotal) : tabLabel(tab)}
+                {...attributes}
                 onClick={() => onSelectTab(tab)}
               >
-                <NavIcon tab={tab} size={18} />
-                <span aria-hidden={tabWithCount ? 'true' : undefined}>{tabLabel(tab)}</span>
-                {tabWithCount ? (
+                <Icon name={tabIcon(tab)} size={18} />
+                <span aria-hidden={labelled ? undefined : 'true'}>{tabLabel(tab)}</span>
+                {showTotal ? (
                   <span className="bar-pill" aria-hidden="true">
                     {formatPrice(cartTotal)}
                   </span>

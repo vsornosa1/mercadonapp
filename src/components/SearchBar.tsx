@@ -1,3 +1,5 @@
+import { Icon } from './icons.tsx';
+
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
@@ -7,20 +9,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
   return (
     <div className="search-bar">
       <div className="search-bar__field">
-        <svg
-          className="search-bar__icon"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+        <Icon name="search" size={18} className="search-bar__icon" />
         <label className="visually-hidden" htmlFor="product-search">
           Buscar producto
         </label>

@@ -1,7 +1,6 @@
-import type { ReactElement } from 'react';
-
 import { formatPrice } from '../lib/format.ts';
 import { pluralise } from '../lib/plural.ts';
+import type { IconName } from './icons.tsx';
 
 /**
  * Where the user can go.
@@ -17,47 +16,19 @@ const LABELS: Record<TabId, string> = {
   cart: 'Lista',
 };
 
-export const NAV_TABS: readonly TabId[] = ['browse', 'cart'];
-
-const ICONS: Record<TabId, ReactElement> = {
-  browse: (
-    <>
-      <rect x="3" y="3" width="7" height="7" rx="1" />
-      <rect x="14" y="3" width="7" height="7" rx="1" />
-      <rect x="3" y="14" width="7" height="7" rx="1" />
-      <rect x="14" y="14" width="7" height="7" rx="1" />
-    </>
-  ),
-  cart: (
-    <>
-      <circle cx="9" cy="21" r="1" />
-      <circle cx="20" cy="21" r="1" />
-      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-    </>
-  ),
+const ICONS: Record<TabId, IconName> = {
+  browse: 'browse',
+  cart: 'cart',
 };
+
+export const NAV_TABS: readonly TabId[] = ['browse', 'cart'];
 
 export function tabLabel(tab: TabId): string {
   return LABELS[tab];
 }
 
-export function NavIcon({ tab, size = 22 }: { tab: TabId; size?: number }) {
-  return (
-    <svg
-      className="nav-icon"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {ICONS[tab]}
-    </svg>
-  );
+export function tabIcon(tab: TabId): IconName {
+  return ICONS[tab];
 }
 
 /**
@@ -67,4 +38,28 @@ export function NavIcon({ tab, size = 22 }: { tab: TabId; size?: number }) {
 export function cartTabName(count: number, total: number): string {
   if (count === 0) return LABELS.cart;
   return `${LABELS.cart}, ${pluralise(count, 'producto', 'productos')}, ${formatPrice(total)}`;
+}
+
+/**
+ * The attributes every tab button needs, derived once.
+ *
+ * This is the part that can silently drift: the list tab has to state how many
+ * items and what they cost, or the number is a visual ornament that only sighted
+ * users get. Two navigations render these tabs, so the rule lives here rather
+ * than being restated in each.
+ */
+export function navTabAttributes(
+  tab: TabId,
+  current: boolean,
+  cartCount: number,
+  cartTotal: number,
+): { 'aria-current'?: 'page'; 'aria-label': string; labelled: boolean } {
+  const showedCount = tab === 'cart' && cartCount > 0;
+  return {
+    'aria-current': current ? 'page' : undefined,
+    'aria-label': showedCount ? cartTabName(cartCount, cartTotal) : tabLabel(tab),
+    // When the count is in the accessible name, the visible label must not repeat
+    // it as well, or the tab announces itself twice.
+    labelled: !showedCount,
+  };
 }

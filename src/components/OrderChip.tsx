@@ -35,7 +35,11 @@ export function OrderChip({ order, onChange }: OrderChipProps) {
 
   return (
     <div className="order">
-      <div className="order__chip" role="group" aria-label={`Orden de la lista: ${MODE_LABEL[order.mode]}`}>
+      <div
+        className="order__chip"
+        role="group"
+        aria-label={`Orden de la lista: ${MODE_LABEL[order.mode]}`}
+      >
         {MODES.map(({ mode, label }) => (
           <button
             key={mode}
@@ -43,7 +47,7 @@ export function OrderChip({ order, onChange }: OrderChipProps) {
             className="order__option"
             aria-pressed={order.mode === mode}
             // Nothing has been arranged yet, so "Mi orden" would be a second name
-            // for the proposal. It appears as soon as the first move makes it real.
+            // for the proposal. It reads as inert until a first move makes it real.
             disabled={mode === 'custom' && !arranged}
             onClick={() => onChange(mode)}
           >
