@@ -6,6 +6,7 @@ import {
   loadCart,
   removeItem,
   saveCart,
+  setQuantity,
   toggleChecked,
   type StorageLike,
 } from '../lib/cart.ts';
@@ -28,6 +29,10 @@ export function useCart() {
   const remove = useCallback((productId: number) => setCart((c) => removeItem(c, productId)), []);
   const toggle = useCallback((productId: number) => setCart((c) => toggleChecked(c, productId)), []);
   const clear = useCallback(() => setCart(() => clearCart()), []);
+  const quantity = useCallback(
+    (productId: number, value: number) => setCart((c) => setQuantity(c, productId, value)),
+    [],
+  );
 
-  return { cart, add, remove, toggle, clear };
+  return { cart, add, remove, toggle, clear, quantity };
 }

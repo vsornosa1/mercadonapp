@@ -33,13 +33,19 @@ const products: EnrichedCatalogProduct[] = [
   makeProduct({ id: 4, name: 'Limpiador', unitPrice: 2, categoryPath: LIMPIEZA, leafCategoryId: 41 }),
 ];
 
-const item = (productId: number, checked = false) => ({ productId, addedAt: '', checked });
+const item = (productId: number, quantity = 1, checked = false) => ({
+  productId,
+  addedAt: '',
+  checked,
+  quantity,
+});
 
 function renderScreen(cart: Cart, order: OrderPreference = defaultOrder()) {
   const onOrderChange = vi.fn();
   const onToggle = vi.fn();
   const onRemove = vi.fn();
   const onClear = vi.fn();
+  const onSetQuantity = vi.fn();
 
   render(
     <CartScreen
@@ -51,14 +57,17 @@ function renderScreen(cart: Cart, order: OrderPreference = defaultOrder()) {
       onToggle={onToggle}
       onRemove={onRemove}
       onClear={onClear}
+      onSetQuantity={onSetQuantity}
     />,
   );
 
-  return { onOrderChange, onToggle, onRemove, onClear };
+  return { onOrderChange, onToggle, onRemove, onClear, onSetQuantity };
 }
 
 const zoneHeadings = () =>
   screen.queryAllByRole('heading', { level: 2 }).map((heading) => heading.textContent);
+
+const summary = () => screen.getByRole('complementary', { name: 'Total de la lista' });
 
 beforeEach(() => {
   vi.stubGlobal('confirm', vi.fn(() => true));
@@ -241,6 +250,58 @@ describe('CartScreen — A–Z', () => {
   });
 });
 
+describe('CartScreen — quantities', () => {
+  it('says how many of each product are on the list', () => {
+    renderScreen({ items: [item(1, 3)], updatedAt: '' });
+    expect(screen.getByRole('group', { name: /Cantidad de Manzana Golden/ })).toHaveAccessibleName(
+      'Cantidad de Manzana Golden: 3',
+    );
+  });
+
+  it('adds one more', async () => {
+    const user = userEvent.setup();
+    const { onSetQuantity } = renderScreen({ items: [item(1, 2)], updatedAt: '' });
+
+    await user.click(screen.getByRole('button', { name: 'Añadir uno de Manzana Golden' }));
+
+    expect(onSetQuantity).toHaveBeenCalledWith(1, 3);
+  });
+
+  it('takes one away', async () => {
+    const user = userEvent.setup();
+    const { onSetQuantity } = renderScreen({ items: [item(1, 4)], updatedAt: '' });
+
+    await user.click(screen.getByRole('button', { name: 'Quitar uno de Manzana Golden' }));
+
+    expect(onSetQuantity).toHaveBeenCalledWith(1, 3);
+  });
+
+  it('cannot take the last one away, because none of it means removing it', () => {
+    renderScreen({ items: [item(1, 1)], updatedAt: '' });
+    expect(screen.getByRole('button', { name: 'Quitar uno de Manzana Golden' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Eliminar Manzana Golden' })).toBeEnabled();
+  });
+
+  it('prices each line by its own quantity, so the total adds up on screen', () => {
+    // Two lines, so the line price (2,88) differs from the total: with one line
+    // both would read 2,88 and the assertion could not tell them apart.
+    renderScreen({ items: [item(2, 3), item(1, 1)], updatedAt: '' });
+    // A regex, not a string: the currency format uses a no-break space.
+    expect(screen.getByText(/2,88/)).toBeInTheDocument();
+    expect(summary().textContent).toContain(formatPrice(4.07));
+  });
+
+  it('multiplies the quantities into the total', () => {
+    renderScreen({ items: [item(1, 2), item(2, 3)], updatedAt: '' });
+    expect(summary().textContent).toContain(formatPrice(2 * 1.19 + 3 * 0.96));
+  });
+
+  it('says how many items the total covers, quantities included', () => {
+    renderScreen({ items: [item(1, 2), item(2, 3)], updatedAt: '' });
+    expect(summary().textContent).toContain('5 productos');
+  });
+});
+
 describe('CartScreen — reset', () => {
   const arranged: OrderPreference = { mode: 'custom', zoneOrder: ['bebidas'], withinZone: {} };
 
@@ -279,19 +340,12 @@ describe('CartScreen — reset', () => {
 });
 
 describe('CartScreen — what it costs', () => {
-  const summary = () => screen.getByRole('complementary', { name: 'Total de la lista' });
-
   // Read from the summary block rather than by text: Spanish currency uses a
   // no-break space before the €, and Testing Library compares a string matcher
   // against the normalised text.
   it('adds up one of each item, whatever order they are shown in', () => {
     renderScreen({ items: [item(1), item(2)], updatedAt: '' });
     expect(summary().textContent).toContain(formatPrice(2.15));
-  });
-
-  it('says the total assumes one of each, rather than letting it read as a receipt', () => {
-    renderScreen({ items: [item(1)], updatedAt: '' });
-    expect(screen.getByText('Un artículo de cada uno.')).toBeInTheDocument();
   });
 
   it('warns that goods sold by weight are priced from the label, not the scales', () => {
@@ -307,6 +361,7 @@ describe('CartScreen — what it costs', () => {
         onToggle={vi.fn()}
         onRemove={vi.fn()}
         onClear={vi.fn()}
+        onSetQuantity={vi.fn()}
       />,
     );
     expect(screen.getByText(/al peso/i)).toBeInTheDocument();

@@ -22,7 +22,7 @@ interface OpenProduct {
 
 export function App() {
   const { products, status } = useCatalog();
-  const { cart, add, remove, toggle, clear } = useCart();
+  const { cart, add, remove, toggle, clear, quantity } = useCart();
   const { order, change: changeOrder } = useOrder();
   const isDesktop = useIsDesktop();
 
@@ -109,6 +109,7 @@ export function App() {
         onToggle={toggle}
         onRemove={remove}
         onClear={clear}
+        onSetQuantity={quantity}
       />
     );
   } else {
@@ -128,7 +129,7 @@ export function App() {
         onQueryChange={setQuery}
         activeTab={selected === null ? tab : null}
         onSelectTab={selectTab}
-        cartCount={cart.items.length}
+        cartCount={totals.units}
         cartTotal={totals.total}
         // The tabs are absent exactly when the bar has to carry the list.
         listButton={!isDesktop && selected !== null}
@@ -145,7 +146,7 @@ export function App() {
       {selected === null && !isDesktop ? (
         <BottomNav
           active={tab}
-          cartCount={cart.items.length}
+          cartCount={totals.units}
           cartTotal={totals.total}
           onSelect={selectTab}
         />

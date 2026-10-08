@@ -32,6 +32,7 @@ interface CartScreenProps {
   onToggle: (id: number) => void;
   onRemove: (id: number) => void;
   onClear: () => void;
+  onSetQuantity: (id: number, quantity: number) => void;
 }
 
 interface Row {
@@ -65,6 +66,7 @@ export function CartScreen({
   onToggle,
   onRemove,
   onClear,
+  onSetQuantity,
 }: CartScreenProps) {
   const { blocks, zoneIds } = useMemo(
     () => buildBlocks(cart, products, order),
@@ -163,6 +165,7 @@ export function CartScreen({
                       }
                       onToggle={() => onToggle(item.productId)}
                       onRemove={() => onRemove(item.productId)}
+                      onSetQuantity={(quantity) => onSetQuantity(item.productId, quantity)}
                     />
                   ))}
                 </ul>

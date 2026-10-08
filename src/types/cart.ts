@@ -2,7 +2,7 @@
   productId: number;
   addedAt: string; // ISO timestamp
   checked: boolean; // ticked off in the aisle
-  // Deliberately no quantity field: basket totals are out of scope (see SPEC-cart.md).
+  quantity: number; // how many; at least one, because "none" means removed
 }
 
 export interface Cart {

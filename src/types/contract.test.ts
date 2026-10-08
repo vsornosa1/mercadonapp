@@ -29,8 +29,9 @@ describe('domain type contracts', () => {
     >();
   });
 
-  it('keeps the cart free of quantities — basket totals are out of scope', () => {
-    expectTypeOf<CartItem>().not.toHaveProperty('quantity');
+  it('requires a whole quantity on every item, because "none of it" means removed', () => {
+    expectTypeOf<CartItem>().toHaveProperty('quantity');
+    expectTypeOf<CartItem['quantity']>().toEqualTypeOf<number>();
     expectTypeOf<Cart['items']>().toEqualTypeOf<CartItem[]>();
   });
 

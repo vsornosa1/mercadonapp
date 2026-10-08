@@ -1195,8 +1195,8 @@ img {
   display: grid;
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   grid-template-areas:
-    'check thumb name remove'
-    '.     .     move move';
+    'check thumb name    remove'
+    'price price stepper move';
   align-items: center;
   column-gap: var(--space-3);
   row-gap: var(--space-1);
@@ -1216,6 +1216,19 @@ img {
   grid-area: name;
 }
 
+.cart-item__price {
+  grid-area: price;
+  font-size: var(--text-base);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cart-item .stepper {
+  grid-area: stepper;
+  justify-self: end;
+}
+
 .cart-item .move {
   grid-area: move;
   justify-self: end;
@@ -1223,6 +1236,52 @@ img {
 
 .cart-item__remove {
   grid-area: remove;
+}
+
+/* ---- Quantity stepper ----
+   The step down stops at one: *none* of something is what the remove button is
+   for, so the last step is disabled rather than quietly deleting the row. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+.stepper__button {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--text-lg);
+  line-height: 1;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .stepper__button:hover:not(:disabled) {
+    background: var(--color-primary-tint);
+  }
+}
+
+.stepper__button:disabled {
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  cursor: default;
+}
+
+.stepper__value {
+  min-width: 1.5rem;
+  text-align: center;
+  font-size: var(--text-base);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .cart-item__toggle {
@@ -1611,8 +1670,8 @@ img {
   /* A window has the width for one line, so the controls stop taking a row of
      their own. */
   .cart-item {
-    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
-    grid-template-areas: 'check thumb name move remove';
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto auto auto;
+    grid-template-areas: 'check thumb name price stepper move remove';
     row-gap: 0;
   }
 
