@@ -1,107 +1,119 @@
-# Implementation Plan: Deliberate desktop layout, cart total, and similar products
+# Implementation Plan: trip order
 
 ## Overview
 
-Three asks, one theme — the interface should be aimed at each device on purpose
-instead of being one phone layout stretched across every screen.
+Make the list read as a walk. Products and sections are grouped into seven
+**zones** in trip order — non-food its own block, the trip ending at the freezer —
+and the order is a proposal the user can correct in two layers without ever
+dragging. The same vocabulary orders the browse tree, which stops being
+alphabetical.
 
-1. **Two deliberate layouts.** A phone layout (bottom tabs, single column, thumb
-   reach) and a desktop layout (app bar with global search, left category rail,
-   two-column product page, sidebar summaries), switched at `48rem`. Today there
-   is one column capped at `40rem` with a bottom nav on every width, so at
-   ~840 px — the width in the annotated screenshot — the app is still a phone UI.
-2. **Cart total in €.** The list answers "how much is this basket".
-3. **Similar products**, and better alternatives ranked *first* among
-   recommendations.
+Intent: [INTENT-trip-order.md](../.agents/docs/intent/INTENT-trip-order.md) ·
+Specs: [SPEC-zones.md](../.agents/docs/intent/SPEC-zones.md),
+[SPEC-ordering.md](../.agents/docs/intent/SPEC-ordering.md)
 
 ## Architecture Decisions
 
-- **Desktop is a separate composition, not a wider phone.** A `useMediaQuery`
-  hook picks the composition, so each layout is honest about what it is instead
-  of hiding one behind CSS that leaves a duplicate accessibility tree.
-- **The search field becomes global; the "Buscar" tab is removed.** The field is
-  visible on every screen, so a tab that navigates to a second copy of the same
-  control is a redundant stop. Typing is a *mode* (results), not a destination.
-  This is what the crossed-out "Buscar" in the annotated screenshot asks for.
-  View resolution becomes explicit and ordered: product > query > tab.
-- **The cart total is derived, never stored.** `cartTotal()` sums `unitPrice`,
-  which the catalogue gives as the real price of one purchase unit (`1 l` milk,
-  `1,07 kg` of pears). No schema change, no new `quantity` field: SPEC-cart
-  rules quantities "ask first", and the total is useful without them. A
-  `quantity` field, if ever added, multiplies into the same function.
-- **The total discloses its assumption.** It is "one of each", and items sold by
-  weight are priced at the amount the catalogue lists. Saying so is the same
-  standard we hold nutrition figures to.
-- **"Similares" is not a health claim.** Better alternatives stay a food-only,
-  evidence-gated panel; similares is a neutral "same shelf, like this one" list
-  that also works for shampoo — and it is exactly what a product with *no*
-  better alternative previously had nothing of.
-- **Recommendations are ordered, not merged.** Better alternatives first (they
-  answer "can I do better?"), similares after (they answer "what else is here?").
-  The panels never repeat a product.
+- **The mapping is data, not a branch.** `SECTION_TO_ZONE` and `ZONES` are exported
+  tables, so moving a section is a one-line reviewable diff. Zone assignment is per
+  *product* only where it must be: `Bebé` holds both nappies and formula, and that
+  split already exists as the tested `isFoodProduct` — the exception list gets no
+  second copy.
+- **An unknown section falls back, loudly.** A section missing from the table lands
+  in `despensa` and the fallback is asserted in tests, so a future Mercadona
+  category cannot silently vanish from the app.
+- **Groups are shared, sequence is per screen.** The cart follows the user's mode;
+  the browse tree and search always follow the proposal and relevance. Reordering
+  the place you *look things up* would be surprising, and search ranking already
+  answers a different question.
+- **`A–Z` is a view, not a mutation.** It never reads or writes the custom layers,
+  because "I switched to A–Z to check something and lost my arrangement" is the one
+  failure that would make the whole feature untrustworthy.
+- **Move controls, never drag.** Keyboard-operable, testable with real user events,
+  and reliable one-handed in a shop. Drag may be layered on later; it is never the
+  only mechanism.
+- **The count parity test is the regression that matters.** A shelf is cross-listed
+  under several sections in the mirror, so the tree and the listing must key on the
+  same `(section, shelf)` pair. The test walks the *real bundle* and asserts
+  `count === opened.length` everywhere, so the 11+ historical mismatches can never
+  come back.
 
 ## Task List
 
-### Phase 1: Foundations (pure logic, TDD)
+### Phase 1: The vocabulary (`zones`)
 
-- [ ] Task 1: `cartTotal(cart, products)` in `src/lib/cart.ts` — total, priced
-      count, missing products, variable-weight count. Tests first.
-- [ ] Task 2: `findSimilar(product, catalog, excludeIds, limit)` in
-      `src/lib/similar.ts` — same leaf, then same shelf; deterministic order.
-      Tests first.
-- [ ] Task 3: `useMediaQuery(query)` in `src/app/useMediaQuery.ts` — safe when
-      `matchMedia` is absent (jsdom), so tests opt in explicitly.
+- [ ] Task 1: `src/lib/zones.ts` — `ZONES`, `SECTION_TO_ZONE`, `zoneFor`,
+      `groupByZone`, plus the type contract. Tests first.
+- [ ] Task 2: Prove it against the real catalogue — every one of the 4,330 products
+      gets exactly one zone; the seven counts sum to the catalogue size; all 26
+      sections appear in the table; baby food and nappies land in different zones,
+      asserted from real products rather than fixtures.
+- [ ] Task 3: The count parity regression — walk every section and shelf in the
+      bundle and assert each count equals the list it opens.
 
-### Checkpoint: Foundations
-- [ ] `npm test`, `npm run typecheck`, `npm run lint` clean
+### Checkpoint: Vocabulary
+- [ ] `npm test`, `typecheck`, `lint` clean
+- [ ] No UI yet; the mapping is reviewable as data
 
-### Phase 2: Shell and navigation
+### Phase 2: The sequence (`ordering`)
 
-- [ ] Task 4: `AppHeader` — one row on desktop (title, global search, nav,
-      cart total); two rows on phone (title, search). Replaces the inline header.
-- [ ] Task 5: `BottomNav` reduced to `browse | cart`; carries the cart total in
-      the Lista tab's accessible name.
-- [ ] Task 6: `App` shell — query lifted to `App`, ordered view resolution,
-      nav hidden while a product is open.
+- [ ] Task 4: The preference shape — `OrderMode`, defaults, `isCustomised`,
+      `nextMode`, `resetOrder`. Tests first.
+- [ ] Task 5: `orderZones` — the custom order applied over the proposal, tolerating
+      a short or partial list.
+- [ ] Task 6: `orderWithinZone` — layer 2, leaving unlisted products in catalogue
+      order, ignoring ids that no longer exist.
+- [ ] Task 7: Persistence under `mercadonapp.order.v1` — survives a reload, degrades
+      to the proposal on a corrupt or partially-valid value, and keeps a zone's
+      order while it is temporarily empty.
 
-### Checkpoint: Shell
-- [ ] Navigation and global search covered by tests
+### Checkpoint: Sequence
+- [ ] Both layers round-trip through storage
+- [ ] `A–Z` proven non-destructive by test
 
-### Phase 3: Screens
+### Phase 3: The cart
 
-- [ ] Task 7: `SearchResults` (replaces `SearchScreen`) — takes `query`, renders
-      results. The idle "type to search" state moves to the header field.
-- [ ] Task 8: `BrowseScreen` — phone drill-down kept; desktop gets a section
-      rail with the content beside it.
-- [ ] Task 9: `ProductScreen` — two columns on desktop; `Similares` panel under
-      `Alternativas mejores`, never repeating a recommended product.
-- [ ] Task 10: `CartScreen` — total summary: sticky bar on phone, sidebar card
-      on desktop.
+- [ ] Task 8: Group the cart by zone with a heading per non-empty zone; phone and
+      window arrangements both deliberate, as with the rest of the app.
+- [ ] Task 9: The mode chip — always states the current mode, carries the one-line
+      `why`, sits beneath the search field at the top of the cart.
+- [ ] Task 10: Move controls — zones up/down, and products within a zone, reachable
+      by keyboard alone; the first move switches the mode to `Mi orden`.
+- [ ] Task 11: `A–Z` and reset, including the confirm behind reset.
 
-### Checkpoint: Screens
-- [ ] Full suite, build, and a browser pass at 375 px, 840 px and 1280 px
-- [ ] Contrast audit clean on every screen at both layouts
+### Checkpoint: Cart
+- [ ] Full suite green
+- [ ] Browser pass at 375 px and 1280 px
 
-### Phase 4: Cleanup and documentation
+### Phase 4: The browse tree
 
-- [ ] Task 11: SPEC-cart.md records totals as in scope; SPEC-alternatives.md
-      records the similares panel and the recommendation order.
-- [ ] Task 12: remove CSS left dead by the rewrite; commit.
+- [ ] Task 12: Sections grouped under zone headings, in zone order, on both
+      layouts — the alphabetical interleaving is the original complaint.
+
+### Checkpoint: Browse
+- [ ] Section counts still equal the lists they open on both layouts
+
+### Phase 5: Verification and merge
+
+- [ ] Task 13: Catalogue-wide audit assertions and a browser verification pass:
+      320–1440 px, no horizontal overflow, contrast clean, keyboard-only reorder
+      walked end to end.
+- [ ] Task 14: Version to 1.1.0, then merge `feature/store-map` to `main`.
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Breakpoint switch changes what a test renders | Medium | `useMediaQuery` returns phone when `matchMedia` is missing; tests stub it to choose a layout |
-| Two compositions drift apart | Medium | Both share the leaf components (rows, pager, states); only the arrangement is duplicated |
-| A cart total that implies more precision than we have | High | Disclose "one of each" and the by-weight caveat in the UI, not just the code |
-| Similares crowding out the honest alternatives panel | Low | Alternatives render first and are never truncated by similares |
+| The zone order is wrong for a real store | High | It is a default, not a verdict: two editable layers, an always-visible mode chip, and `A–Z` that never destroys the arrangement |
+| Headings cost too much of a 375 px screen | Medium | Empty zones are omitted; measure the real cost in the browser rather than estimating it |
+| The browse tree and the cart drift into different vocabularies | Medium | Both consume the same `zones` module; the parity test covers counts |
+| A custom order silently lost | High | Write-through on every mutation, and an explicit test that entering `A–Z` and returning preserves both layers |
+| Scope creep into per-store layouts | Medium | `SPEC-zones.md` refuses aisle numbers outright; zones stay coarse on purpose |
 
 ## Open Questions
 
-- **Quantities.** Settled: keep one of each. The total assumes it and says so,
-  which leaves the cart a checklist. Steppers stay available as an extension
-  inside `cartTotal()` if the list ever stops being something you tick off.
-- The trip-order initiative (`SPEC-zones.md`, `SPEC-ordering.md`) is approved but
-  still owes its own task list; this plan does not cover it.
-- Version: this is a feature release → `1.1.0` rather than `1.0.1`.
+- Whether the zone order matches a real Mercadona trip — answered by use, not by
+  more questions. The signal is how many clusters get moved.
+- Whether `Mascotas` deserves its own zone. It stays in `no-alimentacion` for now.
+- Whether a temporarily emptied zone should keep its stored order. Proposal: kept,
+  so that removing and re-adding an item cannot quietly lose an arrangement.
