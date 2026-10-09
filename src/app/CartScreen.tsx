@@ -1,11 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { CartItemRow } from '../components/CartItemRow.tsx';
 import { CartSummary } from '../components/CartSummary.tsx';
+import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
 import { MoveControls } from '../components/MoveControls.tsx';
 import { OrderChip } from '../components/OrderChip.tsx';
 import { StateMessage } from '../components/StateMessage.tsx';
 import type { CartTotal } from '../lib/cart.ts';
+import { pluralise } from '../lib/plural.ts';
 import {
   isCustomised,
   moveProduct,
@@ -75,15 +77,9 @@ export function CartScreen({
 
   const missing = cart.items.filter((item) => !products.some((p) => p.id === item.productId));
 
-  const handleClear = () => {
-    if (window.confirm('¿Vaciar la lista entera?')) onClear();
-  };
-
-  const handleReset = () => {
-    if (window.confirm('¿Volver al orden de compra y descartar tu orden?')) {
-      onOrderChange(resetOrder());
-    }
-  };
+  // Which destructive question is on screen, if any. The dialogs are rendered
+  // always and opened by this, so their state has one owner.
+  const [asking, setAsking] = useState<'clear' | 'reset' | null>(null);
 
   if (cart.items.length === 0) {
     return (

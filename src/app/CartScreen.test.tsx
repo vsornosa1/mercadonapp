@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { cartTotal } from '../lib/cart.ts';
 import { formatPrice } from '../lib/format.ts';
@@ -69,13 +69,8 @@ const zoneHeadings = () =>
 
 const summary = () => screen.getByRole('complementary', { name: 'Total de la lista' });
 
-beforeEach(() => {
-  vi.stubGlobal('confirm', vi.fn(() => true));
-});
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+// Nothing here opens the browser's own alert any more: both destructive actions go
+// through the app's own modal, which the tests reach by clicking it.
 
 describe('CartScreen', () => {
   it('shows an empty state when the list is empty', () => {
@@ -92,15 +87,39 @@ describe('CartScreen', () => {
     expect(onToggle).toHaveBeenCalledWith(1);
   });
 
-  it('removes and clears', async () => {
+  it('removes a line', async () => {
     const user = userEvent.setup();
-    const { onRemove, onClear } = renderScreen({ items: [item(2)], updatedAt: '' });
+    const { onRemove } = renderScreen({ items: [item(2)], updatedAt: '' });
 
     await user.click(screen.getByRole('button', { name: 'Eliminar Leche entera' }));
     expect(onRemove).toHaveBeenCalledWith(2);
+  });
+
+  it('asks before emptying the whole list, in the app rather than a browser alert', async () => {
+    const user = userEvent.setup();
+    const { onClear } = renderScreen({ items: [item(2), item(1)], updatedAt: '' });
 
     await user.click(screen.getByRole('button', { name: 'Vaciar lista' }));
-    expect(onClear).toHaveBeenCalled();
+
+    const dialog = screen.getByRole('dialog', { name: '¿Vaciar la lista?' });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveTextContent('2 productos');
+    // Nothing has happened yet: a dialog is a question, not an action.
+    expect(onClear).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Vaciar' }));
+    expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the list alone when the question is called off', async () => {
+    const user = userEvent.setup();
+    const { onClear } = renderScreen({ items: [item(2)], updatedAt: '' });
+
+    await user.click(screen.getByRole('button', { name: 'Vaciar lista' }));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    expect(onClear).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { hidden: true })).not.toHaveAttribute('open');
   });
 
   it('renders a delisted product as unavailable and still removable', () => {
@@ -339,7 +358,9 @@ describe('CartScreen — reset', () => {
 
     await user.click(screen.getByRole('button', { name: 'Restablecer orden' }));
 
-    expect(window.confirm).toHaveBeenCalledTimes(1);
+    expect(
+      screen.getByRole('dialog', { name: '¿Restablecer el orden?' }),
+    ).toBeInTheDocument();
   });
 
   it('reports the reset only once it is confirmed', async () => {
@@ -347,16 +368,18 @@ describe('CartScreen — reset', () => {
     const { onOrderChange } = renderScreen({ items: [item(1)], updatedAt: '' }, arranged);
 
     await user.click(screen.getByRole('button', { name: 'Restablecer orden' }));
+    expect(onOrderChange).not.toHaveBeenCalled();
 
+    await user.click(screen.getByRole('button', { name: 'Restablecer' }));
     expect(onOrderChange).toHaveBeenCalledWith(defaultOrder());
   });
 
-  it('keeps the arrangement when the confirmation is declined', async () => {
+  it('keeps the arrangement when the question is called off', async () => {
     const user = userEvent.setup();
-    vi.stubGlobal('confirm', vi.fn(() => false));
     const { onOrderChange } = renderScreen({ items: [item(1)], updatedAt: '' }, arranged);
 
     await user.click(screen.getByRole('button', { name: 'Restablecer orden' }));
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
 
     expect(onOrderChange).not.toHaveBeenCalled();
   });
